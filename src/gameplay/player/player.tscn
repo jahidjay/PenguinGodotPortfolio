@@ -1,0 +1,17 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://src/gameplay/player/player.gd" id="1"]
+[ext_resource type="Resource" path="res://data/planes/lancer.tres" id="2"]
+[ext_resource type="Script" path="res://src/gameplay/player/laser_ability.gd" id="3"]
+[ext_resource type="Script" path="res://src/gameplay/player/shot_weapon.gd" id="4"]
+
+[node name="Player" type="Node2D"]
+script = ExtResource("1")
+config = ExtResource("2")
+
+[node name="LaserAbility" type="Node2D" parent="."]
+show_behind_parent = true
+script = ExtResource("3")
+
+[node name="ShotWeapon" type="Node2D" parent="."]
+script = ExtResource("4")

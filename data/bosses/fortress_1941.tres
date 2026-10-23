@@ -1,0 +1,91 @@
+[gd_resource type="Resource" script_class="BossDefinition" format=3 uid="uid://cdl83lp7qg8pe"]
+
+[ext_resource type="Script" uid="uid://dkft60jgy0v4e" path="res://src/gameplay/boss/boss_definition.gd" id="1_def"]
+[ext_resource type="Script" uid="uid://clna0vf7mqbci" path="res://src/gameplay/boss/boss_part_definition.gd" id="2_part"]
+[ext_resource type="Script" uid="uid://dy0npvdnofaqm" path="res://src/gameplay/bullets/patterns/bullet_pattern.gd" id="3_base"]
+[ext_resource type="Script" uid="uid://bc468feno7tq1" path="res://src/gameplay/bullets/patterns/aimed_fan_pattern.gd" id="4_fan"]
+[ext_resource type="Script" uid="uid://b1mq0vst02udx" path="res://src/gameplay/bullets/patterns/ring_pattern.gd" id="5_ring"]
+[ext_resource type="Script" uid="uid://gpp0w87xk4ji" path="res://src/gameplay/bullets/patterns/spiral_pattern.gd" id="6_spiral"]
+
+[sub_resource type="Resource" id="core_spiral"]
+script = ExtResource("6_spiral")
+interval = 0.11
+interval_at_full_rage = 0.045
+start_delay = 0.5
+speed = 140.0
+
+[sub_resource type="Resource" id="core_spiral_second_arm"]
+script = ExtResource("6_spiral")
+angle_offset = 3.14159
+interval = 0.11
+interval_at_full_rage = 0.045
+start_delay = 0.0
+min_rage = 0.5
+speed = 140.0
+
+[sub_resource type="Resource" id="core_rage_ring"]
+script = ExtResource("5_ring")
+count = 24
+interval = 1.1
+start_delay = 0.3
+min_rage = 1.0
+speed = 110.0
+
+[sub_resource type="Resource" id="part_core"]
+script = ExtResource("2_part")
+part_name = "Core"
+is_core = true
+shape = 1
+size = Vector2(53, 36)
+max_hp = 1200.0
+offset = Vector2(0, -6)
+patterns = Array[ExtResource("3_base")]([SubResource("core_spiral"), SubResource("core_spiral_second_arm"), SubResource("core_rage_ring")])
+
+[sub_resource type="Resource" id="turret_fan"]
+script = ExtResource("4_fan")
+spread = 0.28
+interval = 1.1
+speed = 170.0
+
+[sub_resource type="Resource" id="part_l_turret"]
+script = ExtResource("2_part")
+part_name = "Turret"
+max_hp = 120.0
+offset = Vector2(-71, 12)
+patterns = Array[ExtResource("3_base")]([SubResource("turret_fan")])
+
+[sub_resource type="Resource" id="part_r_turret"]
+script = ExtResource("2_part")
+part_name = "Turret"
+max_hp = 120.0
+offset = Vector2(71, 12)
+patterns = Array[ExtResource("3_base")]([SubResource("turret_fan")])
+
+[sub_resource type="Resource" id="engine_ring"]
+script = ExtResource("5_ring")
+interval = 1.9
+speed = 100.0
+
+[sub_resource type="Resource" id="part_l_engine"]
+script = ExtResource("2_part")
+part_name = "Engine"
+shape = 1
+size = Vector2(17, 30)
+max_hp = 160.0
+offset = Vector2(-39, 22)
+patterns = Array[ExtResource("3_base")]([SubResource("engine_ring")])
+
+[sub_resource type="Resource" id="part_r_engine"]
+script = ExtResource("2_part")
+part_name = "Engine"
+shape = 1
+size = Vector2(17, 30)
+max_hp = 160.0
+offset = Vector2(39, 22)
+patterns = Array[ExtResource("3_base")]([SubResource("engine_ring")])
+
+[resource]
+script = ExtResource("1_def")
+display_name = "FLYING FORTRESS"
+hull = 1
+parts = Array[ExtResource("2_part")]([SubResource("part_core"), SubResource("part_l_turret"), SubResource("part_r_turret"), SubResource("part_l_engine"), SubResource("part_r_engine")])

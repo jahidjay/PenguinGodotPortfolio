@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="PlaneConfig" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/gameplay/player/plane_config.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+plane_name = "Lancer"
+color = Color(1, 0.7, 0.2, 1)
+color_ability = Color(1, 1, 0.8, 1)
+speed = 210.0
+speed_firing = 210.0
+speed_ability = 105.0
+hitbox_radius = 3.0
+fire_interval = 0.06
+shot_speed = 900.0
+shot_damage = 1.0
+shot_offset = 8.0
+laser_min_meter = 40.0
+meter_max = 100.0
+meter_per_hit = 0.6
+meter_burn = 25.0
+laser_damage = 3.0
+laser_hits_per_second = 20.0
+laser_width = 14.0
+bombs = 3
+bomb_damage = 80.0
+bomb_invulnerability = 2.0
+lives = 3
+respawn_invulnerability = 2.5

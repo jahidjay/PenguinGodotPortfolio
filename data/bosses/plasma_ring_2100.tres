@@ -1,0 +1,95 @@
+[gd_resource type="Resource" script_class="BossDefinition" format=3 uid="uid://bn30wgfr24tl6"]
+
+[ext_resource type="Script" uid="uid://dkft60jgy0v4e" path="res://src/gameplay/boss/boss_definition.gd" id="1_def"]
+[ext_resource type="Script" uid="uid://clna0vf7mqbci" path="res://src/gameplay/boss/boss_part_definition.gd" id="2_part"]
+[ext_resource type="Script" uid="uid://dy0npvdnofaqm" path="res://src/gameplay/bullets/patterns/bullet_pattern.gd" id="3_base"]
+[ext_resource type="Script" uid="uid://bc468feno7tq1" path="res://src/gameplay/bullets/patterns/aimed_fan_pattern.gd" id="4_fan"]
+[ext_resource type="Script" uid="uid://b1mq0vst02udx" path="res://src/gameplay/bullets/patterns/ring_pattern.gd" id="5_ring"]
+[ext_resource type="Script" uid="uid://l6b4l5ugy1q7" path="res://src/gameplay/bullets/patterns/radial_curve_pattern.gd" id="6_curve"]
+
+[sub_resource type="Resource" id="core_shielded_warp_ring"]
+script = ExtResource("5_ring")
+interval = 1.8
+max_rage = 0.99
+speed = 90.0
+bullet_kind = 2
+
+[sub_resource type="Resource" id="core_exposed_warp_ring"]
+script = ExtResource("5_ring")
+count = 20
+interval = 1.2
+start_delay = 0.0
+min_rage = 1.0
+speed = 130.0
+bullet_kind = 2
+
+[sub_resource type="Resource" id="core_exposed_fan"]
+script = ExtResource("4_fan")
+count = 5
+interval = 1.2
+start_delay = 0.6
+min_rage = 1.0
+speed = 180.0
+
+[sub_resource type="Resource" id="part_core"]
+script = ExtResource("2_part")
+part_name = "Core"
+is_core = true
+size = Vector2(23, 30)
+max_hp = 1600.0
+patterns = Array[ExtResource("3_base")]([SubResource("core_shielded_warp_ring"), SubResource("core_exposed_warp_ring"), SubResource("core_exposed_fan")])
+
+[sub_resource type="Resource" id="shield_curve"]
+script = ExtResource("6_curve")
+interval = 0.16
+speed = 120.0
+
+[sub_resource type="Resource" id="part_shield_1"]
+script = ExtResource("2_part")
+part_name = "Shield"
+size = Vector2(12, 16)
+max_hp = 140.0
+orbit_radius = 62.0
+orbit_speed = 0.8
+patterns = Array[ExtResource("3_base")]([SubResource("shield_curve")])
+
+[sub_resource type="Resource" id="part_shield_2"]
+script = ExtResource("2_part")
+part_name = "Shield"
+size = Vector2(12, 16)
+max_hp = 140.0
+orbit_radius = 62.0
+orbit_speed = 0.8
+orbit_phase = 1.5708
+patterns = Array[ExtResource("3_base")]([SubResource("shield_curve")])
+
+[sub_resource type="Resource" id="part_shield_3"]
+script = ExtResource("2_part")
+part_name = "Shield"
+size = Vector2(12, 16)
+max_hp = 140.0
+orbit_radius = 62.0
+orbit_speed = 0.8
+orbit_phase = 3.14159
+patterns = Array[ExtResource("3_base")]([SubResource("shield_curve")])
+
+[sub_resource type="Resource" id="part_shield_4"]
+script = ExtResource("2_part")
+part_name = "Shield"
+size = Vector2(12, 16)
+max_hp = 140.0
+orbit_radius = 62.0
+orbit_speed = 0.8
+orbit_phase = 4.71239
+patterns = Array[ExtResource("3_base")]([SubResource("shield_curve")])
+
+[resource]
+script = ExtResource("1_def")
+display_name = "PLASMA RING"
+era = "2100"
+core_rule = 1
+hull = 3
+anchor = Vector2(180, 150)
+sway_amplitude = Vector2(90, 40)
+sway_frequency = Vector2(0.6, 1.2)
+parts = Array[ExtResource("2_part")]([SubResource("part_core"), SubResource("part_shield_1"), SubResource("part_shield_2"), SubResource("part_shield_3"), SubResource("part_shield_4")])

@@ -1,0 +1,210 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://src/ui/hud/hud.gd" id="1"]
+
+[sub_resource type="StyleBoxFlat" id="bar_bg"]
+bg_color = Color(0.2, 0.2, 0.25, 1)
+
+[sub_resource type="StyleBoxFlat" id="boss_fill"]
+bg_color = Color(0.9, 0.3, 0.3, 1)
+
+[sub_resource type="StyleBoxFlat" id="chain_fill"]
+bg_color = Color(0.3, 1, 0.5, 1)
+
+[sub_resource type="StyleBoxFlat" id="meter_fill"]
+bg_color = Color(1, 0.6, 0.1, 1)
+
+[node name="HUD" type="CanvasLayer"]
+script = ExtResource("1")
+
+[node name="Root" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="BossHpBar" type="ProgressBar" parent="Root"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 20.0
+offset_top = 10.0
+offset_right = 460.0
+offset_bottom = 20.0
+mouse_filter = 2
+theme_override_styles/background = SubResource("bar_bg")
+theme_override_styles/fill = SubResource("boss_fill")
+max_value = 1.0
+step = 0.0
+value = 1.0
+show_percentage = false
+
+[node name="CriticalMarker" type="ColorRect" parent="Root"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 93.0
+offset_top = 7.0
+offset_right = 95.0
+offset_bottom = 23.0
+mouse_filter = 2
+color = Color(1, 1, 0.3, 1)
+
+[node name="BossName" type="Label" parent="Root"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 20.0
+offset_top = 22.0
+offset_right = 240.0
+offset_bottom = 40.0
+theme_override_colors/font_color = Color(0.8, 0.8, 0.9, 1)
+theme_override_font_sizes/font_size = 11
+text = "BOSS"
+
+[node name="Status" type="Label" parent="Root"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 200.0
+offset_top = 22.0
+offset_right = 460.0
+offset_bottom = 40.0
+theme_override_font_sizes/font_size = 11
+horizontal_alignment = 2
+
+[node name="ChainCount" type="Label" parent="Root"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 20.0
+offset_top = 40.0
+offset_right = 220.0
+offset_bottom = 100.0
+theme_override_font_sizes/font_size = 48
+text = "0"
+
+[node name="HitsCaption" type="Label" parent="Root"]
+layout_mode = 0
+offset_left = 20.0
+offset_top = 98.0
+offset_right = 120.0
+offset_bottom = 114.0
+theme_override_colors/font_color = Color(0.8, 0.8, 0.9, 1)
+theme_override_font_sizes/font_size = 12
+text = "HITS"
+
+[node name="ChainBar" type="ProgressBar" parent="Root"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 20.0
+offset_top = 116.0
+offset_right = 140.0
+offset_bottom = 122.0
+mouse_filter = 2
+theme_override_styles/background = SubResource("bar_bg")
+theme_override_styles/fill = SubResource("chain_fill")
+max_value = 1.0
+step = 0.0
+show_percentage = false
+
+[node name="Dropped" type="Label" parent="Root"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 20.0
+offset_top = 124.0
+offset_right = 220.0
+offset_bottom = 140.0
+theme_override_colors/font_color = Color(1, 0.5, 0.5, 1)
+theme_override_font_sizes/font_size = 12
+
+[node name="Controls" type="Label" parent="Root"]
+layout_mode = 0
+offset_left = 10.0
+offset_top = 600.0
+offset_right = 340.0
+offset_bottom = 616.0
+theme_override_colors/font_color = Color(0.6, 0.6, 0.7, 1)
+theme_override_font_sizes/font_size = 10
+text = "Z shot  X laser  C bomb  1/2/3 boss  N next  R restart"
+
+[node name="MeterCaption" type="Label" parent="Root"]
+layout_mode = 0
+offset_left = 350.0
+offset_top = 600.0
+offset_right = 470.0
+offset_bottom = 614.0
+theme_override_colors/font_color = Color(1, 0.8, 0.5, 1)
+theme_override_font_sizes/font_size = 10
+text = "LASER (X)"
+
+[node name="MeterBar" type="ProgressBar" parent="Root"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 350.0
+offset_top = 614.0
+offset_right = 470.0
+offset_bottom = 620.0
+mouse_filter = 2
+theme_override_styles/background = SubResource("bar_bg")
+theme_override_styles/fill = SubResource("meter_fill")
+max_value = 1.0
+step = 0.0
+show_percentage = false
+
+[node name="Stats" type="Label" parent="Root"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 10.0
+offset_top = 620.0
+offset_right = 470.0
+offset_bottom = 638.0
+theme_override_colors/font_color = Color(0.9, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 12
+
+[node name="Flash" type="ColorRect" parent="Root"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(1, 1, 1, 0)
+
+[node name="ResultPanel" type="ColorRect" parent="Root"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_top = 224.0
+offset_right = 360.0
+offset_bottom = 374.0
+mouse_filter = 2
+color = Color(0, 0, 0, 0.75)
+
+[node name="ResultTitle" type="Label" parent="Root/ResultPanel"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 20.0
+offset_top = 20.0
+offset_right = 460.0
+offset_bottom = 48.0
+theme_override_colors/font_color = Color(1, 0.9, 0.4, 1)
+theme_override_font_sizes/font_size = 18
+
+[node name="ResultStats" type="Label" parent="Root/ResultPanel"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 20.0
+offset_top = 60.0
+offset_right = 460.0
+offset_bottom = 84.0
+theme_override_font_sizes/font_size = 16
+
+[node name="ResultHint" type="Label" parent="Root/ResultPanel"]
+layout_mode = 0
+offset_left = 20.0
+offset_top = 100.0
+offset_right = 460.0
+offset_bottom = 122.0
+theme_override_colors/font_color = Color(0.7, 0.9, 1, 1)
+theme_override_font_sizes/font_size = 14
+text = "R retry   N next boss   1/2/3 pick boss"

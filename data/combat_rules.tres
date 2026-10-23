@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CombatRules" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/core/combat_rules.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+chain_window = 1.0
+break_mult = 3
+break_add = 50
+break_score_per_hit = 100
+life_bonus_per_life = 5000
+part_kill_score = 2000
+part_kill_chain = 5
+part_kill_cancel_radius = 90.0
+bomb_part_mult = 0.6
+hit_score_base = 10

@@ -1,0 +1,92 @@
+[gd_resource type="Resource" script_class="BossDefinition" format=3 uid="uid://cb7lk7vw3f2fc"]
+
+[ext_resource type="Script" uid="uid://dkft60jgy0v4e" path="res://src/gameplay/boss/boss_definition.gd" id="1_def"]
+[ext_resource type="Script" uid="uid://clna0vf7mqbci" path="res://src/gameplay/boss/boss_part_definition.gd" id="2_part"]
+[ext_resource type="Script" uid="uid://dy0npvdnofaqm" path="res://src/gameplay/bullets/patterns/bullet_pattern.gd" id="3_base"]
+[ext_resource type="Script" uid="uid://bc468feno7tq1" path="res://src/gameplay/bullets/patterns/aimed_fan_pattern.gd" id="4_fan"]
+[ext_resource type="Script" uid="uid://bkbuciuwdqkpw" path="res://src/gameplay/bullets/patterns/wall_pattern.gd" id="5_wall"]
+
+[sub_resource type="Resource" id="core_accel_fan"]
+script = ExtResource("4_fan")
+count = 5
+count_at_full_rage = 9
+spread = 0.22
+interval = 1.3
+interval_at_full_rage = 0.55
+speed = 50.0
+bullet_kind = 1
+
+[sub_resource type="Resource" id="part_core"]
+script = ExtResource("2_part")
+part_name = "Core"
+is_core = true
+size = Vector2(26, 34)
+max_hp = 1400.0
+patterns = Array[ExtResource("3_base")]([SubResource("core_accel_fan")])
+
+[sub_resource type="Resource" id="pod_stream"]
+script = ExtResource("4_fan")
+count = 1
+spread = 0.0
+interval = 1.4
+burst_count = 6
+speed = 240.0
+
+[sub_resource type="Resource" id="part_pod_1"]
+script = ExtResource("2_part")
+part_name = "Pod"
+size = Vector2(9, 12)
+orbit_radius = 72.0
+orbit_speed = 1.2
+patterns = Array[ExtResource("3_base")]([SubResource("pod_stream")])
+
+[sub_resource type="Resource" id="part_pod_2"]
+script = ExtResource("2_part")
+part_name = "Pod"
+size = Vector2(9, 12)
+orbit_radius = 72.0
+orbit_speed = 1.2
+orbit_phase = 2.0944
+patterns = Array[ExtResource("3_base")]([SubResource("pod_stream")])
+
+[sub_resource type="Resource" id="part_pod_3"]
+script = ExtResource("2_part")
+part_name = "Pod"
+size = Vector2(9, 12)
+orbit_radius = 72.0
+orbit_speed = 1.2
+orbit_phase = 4.18879
+patterns = Array[ExtResource("3_base")]([SubResource("pod_stream")])
+
+[sub_resource type="Resource" id="wing_wall"]
+script = ExtResource("5_wall")
+interval = 2.3
+speed = 110.0
+
+[sub_resource type="Resource" id="part_l_wing"]
+script = ExtResource("2_part")
+part_name = "Wing"
+shape = 1
+size = Vector2(33, 12)
+max_hp = 150.0
+offset = Vector2(-53, -14)
+patterns = Array[ExtResource("3_base")]([SubResource("wing_wall")])
+
+[sub_resource type="Resource" id="part_r_wing"]
+script = ExtResource("2_part")
+part_name = "Wing"
+shape = 1
+size = Vector2(33, 12)
+max_hp = 150.0
+offset = Vector2(53, -14)
+patterns = Array[ExtResource("3_base")]([SubResource("wing_wall")])
+
+[resource]
+script = ExtResource("1_def")
+display_name = "JET CARRIER"
+era = "1970s"
+hull = 2
+anchor = Vector2(180, 120)
+sway_amplitude = Vector2(98, 15)
+sway_frequency = Vector2(0.9, 1.7)
+parts = Array[ExtResource("2_part")]([SubResource("part_core"), SubResource("part_pod_1"), SubResource("part_pod_2"), SubResource("part_pod_3"), SubResource("part_l_wing"), SubResource("part_r_wing")])
