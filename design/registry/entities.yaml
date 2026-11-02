@@ -1,0 +1,1657 @@
+# Cross-system facts registry. Values here are locked: a GDD that needs a
+# different value must raise the conflict, not silently change it.
+# Created 2026-11-02 from design/gdd/game-events-and-session.md
+# Last updated 2026-11-03 (UX amendments wave 5: added continue_total;
+#   wave 5 batch 2: added continue_accept_verb,
+#   reset_settings_keep_list and menu_hold_verb; school_required_mask is now per-plane;
+#   cb_banner_wait_max retired against banner_wait_max; board_placement note;
+#   final doc closeout: added UI colour tokens ALARM_RED and ALARM_FLARE)
+
+constants:
+  - name: starting_lives
+    value: 3
+    unit: lives
+    range: "1-5"
+    source: design/gdd/game-events-and-session.md
+    referenced_by: [game-events-and-session, save-settings-high-scores, online-leaderboards-boss-rush]
+  - name: max_lives
+    value: 6
+    unit: lives
+    range: "starting_lives-9"
+    source: design/gdd/game-events-and-session.md
+    referenced_by: [game-events-and-session, collision-damage-lives, powerups-and-drops, stage-end-tally, hud]
+  - name: max_drones
+    value: 4
+    unit: drones
+    note: "Locked by design: each powerup adds +1 drone; death resets to 0; carries across stages."
+    source: design/gdd/game-concept.md (section 5)
+    referenced_by: [game-events-and-session, game-concept, collision-damage-lives, plane-kits-lancer-leech, powerups-and-drops, hud, era-shift-and-plane-evolution, plane-kits-sentry-breaker, tutorial, online-leaderboards-boss-rush]
+  - name: max_score_extends
+    value: 2
+    unit: extends per entry
+    range: "0-4"
+    source: design/gdd/game-events-and-session.md
+    referenced_by: [game-events-and-session]
+  - name: continue_seconds
+    value: 10
+    unit: seconds (game time)
+    range: "5-15"
+    source: design/gdd/game-events-and-session.md
+    referenced_by: [game-events-and-session, hud, accessibility-options]
+  - name: continue_total
+    value: "10 (STANDARD) / 30 (EXTENDED, and UNTIMED while another slot is Alive) / null (UNTIMED, no other slot Alive)"
+    unit: seconds (game time), nullable
+    range: "10 or 30"
+    source: design/gdd/game-events-and-session.md (F4)
+    note: "Resolved from access.continue_timer and published by Session; the HUD Continue countdown and drain bar scale on it (HUD HF2, Rule 24, Rule 34a(c)). Added 2026-11-03, UX amendments wave 5."
+    referenced_by: [game-events-and-session, hud, accessibility-options]
+  - name: respawn_delay
+    value: 1.0
+    unit: seconds (game time)
+    range: "0.5-2.0"
+    source: design/gdd/game-events-and-session.md
+    referenced_by: [game-events-and-session]
+
+  - name: enemy_cap
+    value: 2000
+    unit: bullets
+    range: "800-3000"
+    source: design/gdd/bullet-manager.md
+    referenced_by: [bullet-manager, bullet-pattern-library, coop-and-team-chain, enemy-and-ai, boss-and-boss-parts, wave-and-stage-director]
+  - name: player_cap
+    value: 600
+    unit: bullets
+    range: "200-1000"
+    source: design/gdd/bullet-manager.md
+    referenced_by: [bullet-manager, coop-and-team-chain, plane-kits-lancer-leech, plane-kits-sentry-breaker]
+  - name: hit_radius_orb
+    value: 2.5
+    unit: px
+    range: "1.0-3.5"
+    source: design/gdd/bullet-manager.md
+    referenced_by: [bullet-manager, bullet-pattern-library, enemy-and-ai, boss-and-boss-parts, boss-power-budget, era-shift-and-plane-evolution, tutorial]
+  - name: hit_radius_rice
+    value: 1.5
+    unit: px
+    range: "1.0-2.5"
+    source: design/gdd/bullet-manager.md
+    referenced_by: [bullet-manager, bullet-pattern-library, boss-power-budget, era-shift-and-plane-evolution]
+  - name: hit_radius_needle
+    value: 1.25
+    unit: px
+    range: "1.0-2.0"
+    source: design/gdd/bullet-manager.md
+    referenced_by: [bullet-manager, bullet-pattern-library, era-shift-and-plane-evolution]
+  - name: hit_radius_ring
+    value: 2.0
+    unit: px (solid centre circle; ring has a 3 px core pip)
+    range: "1.0-3.0"
+    source: design/gdd/bullet-manager.md
+    referenced_by: [bullet-manager, bullet-pattern-library, era-shift-and-plane-evolution]
+  - name: v_cap_global
+    value: 480
+    unit: px/s (enemy bullets)
+    range: "360-600"
+    source: design/gdd/bullet-manager.md
+    referenced_by: [bullet-manager, bullet-pattern-library, era-shift-and-plane-evolution, plane-kits-sentry-breaker]
+  - name: v_min
+    value: 70
+    unit: px/s (enemy bullets)
+    range: "50-100"
+    source: design/gdd/bullet-manager.md
+    referenced_by: [bullet-manager, bullet-pattern-library, boss-power-budget, era-shift-and-plane-evolution]
+  - name: bullet_lifetime
+    value: 12
+    unit: s (720 ticks)
+    range: "8-20"
+    source: design/gdd/bullet-manager.md
+    referenced_by: [bullet-manager]
+  - name: offscreen_margin
+    value: 20
+    unit: px
+    range: "12-40"
+    source: design/gdd/bullet-manager.md
+    referenced_by: [bullet-manager, enemy-and-ai]
+  - name: player_hitbox_radius
+    value: 3.0
+    unit: px (drawn at true 6 px size)
+    range: "2.0-3.0 (playtest option)"
+    source: design/gdd/player-plane.md (Rule 6)
+    referenced_by: [bullet-manager, player-plane, collision-damage-lives, bullet-pattern-library, enemy-and-ai, vfx-and-screen-feedback]
+  - name: move_speed
+    value: 210
+    unit: px/s (3.5 px/tick)
+    range: "150-240"
+    source: design/gdd/player-plane.md (PF1)
+    referenced_by: [player-plane, bullet-manager, bullet-pattern-library, plane-kits-lancer-leech, wave-and-stage-director, plane-kits-sentry-breaker, tutorial, touch-controls]
+  - name: focus_speed
+    value: 105
+    unit: px/s (1.75 px/tick)
+    range: "60-140"
+    source: design/gdd/player-plane.md (PF1)
+    referenced_by: [player-plane, plane-kits-lancer-leech, plane-kits-sentry-breaker, tutorial, touch-controls]
+  - name: play_top
+    value: "48 (1-2P), 72 (3-4P)"
+    unit: px
+    note: "Latched at stage_started and wave_started (wave 4, 2026-11-03); a drop-in or N change mid-wave or mid-boss keeps the current value until the next latch (boss fight: next stage). HUD layout follows the latched value; gameplay never reads the HUD display mode."
+    source: design/art/art-bible.md (section 7.2)
+    referenced_by: [bullet-manager, art-bible, player-plane, bullet-pattern-library, coop-and-team-chain, enemy-and-ai, display-scaler-and-bezel, boss-and-boss-parts, bombs, wave-and-stage-director, hud, parallax-and-environment, accessibility-options, plane-kits-sentry-breaker, tutorial]
+  - name: respawn_invuln
+    value: 120
+    unit: ticks (2.0 s), starts on the tick the plane becomes Active
+    range: "60-240"
+    source: design/gdd/collision-damage-lives.md (C3)
+    referenced_by: [collision-damage-lives, player-plane, game-events-and-session, coop-and-team-chain, bombs, tutorial]
+  - name: laser_exit_grace
+    value: 12
+    unit: ticks (0.2 s)
+    range: "0-30"
+    source: design/gdd/collision-damage-lives.md (C3)
+    referenced_by: [collision-damage-lives, plane-kits-lancer-leech, critical-break]
+  - name: death_fire_hold
+    value: 30
+    unit: ticks (0.5 s) of no new enemy bullets after a death clear
+    range: "0-60"
+    source: design/gdd/collision-damage-lives.md (V1, Tuning Knobs)
+    referenced_by: [collision-damage-lives, bullet-pattern-library, enemy-and-ai, boss-and-boss-parts, vfx-and-screen-feedback]
+  - name: armour_damage_min
+    value: 20
+    unit: damage units (min for any value that can hit armour)
+    range: "10-50"
+    source: design/gdd/collision-damage-lives.md (C4)
+    referenced_by: [collision-damage-lives, enemy-and-ai, plane-kits-lancer-leech, boss-and-boss-parts, bombs, plane-kits-sentry-breaker]
+  - name: spawn_clearance
+    value: 8
+    unit: px (added to r_pl + r_e)
+    range: "4-24"
+    source: design/gdd/collision-damage-lives.md (Edge Cases, spawn_is_clear)
+    referenced_by: [collision-damage-lives, enemy-and-ai, boss-and-boss-parts, wave-and-stage-director]
+
+  - name: chain_window
+    value: 60
+    unit: ticks (1.0 s)
+    range: "45-90"
+    source: design/gdd/chain-tracker.md (F1)
+    referenced_by: [chain-tracker, coop-and-team-chain, plane-kits-lancer-leech, wave-and-stage-director, hud, plane-kits-sentry-breaker, tutorial]
+  - name: team_window
+    value: 60
+    unit: ticks
+    range: "chain_window-120"
+    source: design/gdd/chain-tracker.md (F3)
+    referenced_by: [chain-tracker, coop-and-team-chain, tutorial]
+  - name: chain_cap
+    value: 999
+    unit: hits
+    note: "Locked by user 2026-11-02"
+    source: design/gdd/chain-tracker.md (Rule 3)
+    referenced_by: [chain-tracker, scoring, save-settings-high-scores, plane-kits-lancer-leech, boss-and-boss-parts, hud, plane-kits-sentry-breaker, online-leaderboards-boss-rush]
+  - name: cb_mult
+    value: 3
+    unit: multiplier
+    range: "1-5"
+    source: design/gdd/chain-tracker.md (F4)
+    referenced_by: [chain-tracker, scoring, critical-break]
+  - name: cb_add
+    value: 50
+    unit: hits
+    range: "0-200"
+    source: design/gdd/chain-tracker.md (F4)
+    referenced_by: [chain-tracker, scoring, critical-break]
+  - name: part_kill_chain
+    value: 5
+    unit: hits (chain bonus per boss-part kill)
+    note: "Owned by Boss (14); first recorded in Chain tracker"
+    source: design/gdd/chain-tracker.md (Rule 2)
+    referenced_by: [chain-tracker, scoring, boss-and-boss-parts]
+
+  - name: extend_unit
+    value: 3000000
+    unit: points (par score of one clean stage)
+    range: "2,000,000-5,000,000"
+    source: design/gdd/scoring.md (F7)
+    referenced_by: [scoring, game-events-and-session, stage-end-tally, online-leaderboards-boss-rush]
+  - name: hit_base
+    value: 10
+    unit: points per counted hit
+    range: "0-50"
+    source: design/gdd/scoring.md (F1)
+    referenced_by: [scoring, coop-and-team-chain]
+  - name: team_pct
+    value: 120
+    unit: percent on hit score during a team chain (2 members)
+    range: "100-200"
+    note: "Owned by Co-op (18). 2P base 120; +team_pct_step per extra member: 3P 130, 4P 140. Default first set in Scoring (F1)"
+    source: design/gdd/coop-and-team-chain.md (F1)
+    referenced_by: [scoring, coop-and-team-chain]
+  - name: kill_values
+    value: "small 200, medium 1000, large 5000, part 5000, boss 100000"
+    unit: points
+    note: "part is paid by Collision's kill_credit(slot, PART) (Boss 14)"
+    source: design/gdd/scoring.md (F2)
+    referenced_by: [scoring, enemy-and-ai, boss-and-boss-parts]
+  - name: item_base
+    value: "gem 100, medal 1000"
+    unit: points (x chain_factor 1-11)
+    note: "Item kinds owned by Powerups (13)"
+    source: design/gdd/scoring.md (F3)
+    referenced_by: [scoring, powerups-and-drops, bombs]
+  - name: cb_unit
+    value: 1000
+    unit: points per raw (uncapped) CB chain point
+    range: "500-2000"
+    source: design/gdd/scoring.md (F4)
+    referenced_by: [scoring, critical-break]
+  - name: ldb_per_life
+    value: 50000
+    unit: points per spare life at a Critical Break
+    range: "25000-100000"
+    source: design/gdd/scoring.md (F4)
+    referenced_by: [scoring, critical-break]
+  - name: stage_end_bonuses
+    value: "clear 100000, no_death 200000, life 50000 each, peak 1300 per point (= peak_value; text fixed wave 3a 2026-11-03)"
+    unit: points
+    source: design/gdd/scoring.md (F5)
+    referenced_by: [scoring, stage-end-tally]
+  - name: score_display_digits
+    value: 9
+    unit: digits (display clamp 999,999,999; stored int64)
+    source: design/gdd/scoring.md (F8)
+    referenced_by: [scoring, save-settings-high-scores, localization, stage-end-tally, hud, menus-title-plane-select]
+
+  - name: spawn_safe_radius
+    value: 42
+    unit: px (bullets spawning closer than this to an Active player are skipped; patterns may set a larger value)
+    range: "24-96"
+    source: design/gdd/bullet-pattern-library.md (F7)
+    referenced_by: [bullet-pattern-library, enemy-and-ai]
+  - name: lane_min_clear
+    value: 14
+    unit: px (minimum clear lane width checked by the pattern validator; 2 x player_hitbox_radius + 2 x 4 px)
+    range: "10-24"
+    source: design/gdd/bullet-pattern-library.md (F8)
+    referenced_by: [bullet-pattern-library, enemy-and-ai, boss-power-budget, tutorial]
+
+
+  - name: max_players
+    value: 4
+    unit: slots
+    source: design/gdd/input-and-player-mapping.md (Rule 1)
+    referenced_by: [input-and-player-mapping, game-events-and-session, player-plane, menus-title-plane-select, vfx-and-screen-feedback]
+  - name: dz_enter
+    value: 0.30
+    unit: stick magnitude
+    range: "0.15-0.50"
+    source: design/gdd/input-and-player-mapping.md (Rule 15)
+    referenced_by: [input-and-player-mapping, player-plane]
+  - name: dz_exit
+    value: 0.20
+    unit: stick magnitude
+    range: "0.10-dz_enter"
+    source: design/gdd/input-and-player-mapping.md (Rule 15)
+    referenced_by: [input-and-player-mapping, player-plane]
+  - name: sector_hyst
+    value: 4
+    unit: degrees
+    range: "0-8"
+    source: design/gdd/input-and-player-mapping.md (Rule 15)
+    referenced_by: [input-and-player-mapping, player-plane]
+  - name: buffer_ticks
+    value: 6
+    unit: ticks (0.1 s), Drone and Bomb only
+    range: "0-12"
+    source: design/gdd/input-and-player-mapping.md (Rule 17, F6)
+    referenced_by: [input-and-player-mapping, bombs, touch-controls]
+
+  - name: canvas_size
+    value: "360x640"
+    unit: px (fixed canvas on every device; x4 = 1440x2560)
+    note: "Locked by art bible 8.1.1; not a tuning knob"
+    source: design/gdd/display-scaler-and-bezel.md (Rule 1)
+    referenced_by: [display-scaler-and-bezel, art-bible, bullet-manager, bullet-pattern-library, bombs, hud, menus-title-plane-select, vfx-and-screen-feedback, parallax-and-environment, touch-controls]
+  - name: auto_fill_min_pct
+    value: 85
+    unit: percent of limiting screen side
+    range: "70-95"
+    source: design/gdd/display-scaler-and-bezel.md (F3)
+    referenced_by: [display-scaler-and-bezel]
+  - name: tate_confirm_seconds
+    value: 10
+    unit: seconds (real time)
+    range: "5-20"
+    source: design/gdd/display-scaler-and-bezel.md (Rule 17)
+    referenced_by: [display-scaler-and-bezel, menus-title-plane-select]
+  - name: bezel_feature_min_px
+    value: 48
+    unit: canvas px
+    range: "24-96"
+    source: design/gdd/display-scaler-and-bezel.md (Rule 11)
+    referenced_by: [display-scaler-and-bezel]
+
+  - name: team_pct_step
+    value: 10
+    unit: percent per extra team member
+    range: "0-30"
+    source: design/gdd/coop-and-team-chain.md (F1)
+    referenced_by: [coop-and-team-chain, scoring]
+  - name: team_window_step
+    value: 8
+    unit: ticks added to team_window per Active player above 2 (60 / 68 / 76)
+    range: "0-15"
+    source: design/gdd/coop-and-team-chain.md (F3)
+    referenced_by: [coop-and-team-chain, chain-tracker]
+  - name: team_join_grace
+    value: 120
+    unit: ticks (exempt from the team-chain check while boss_hit_left = 0; equals respawn_invuln)
+    range: "60-240"
+    source: design/gdd/coop-and-team-chain.md (Rule 13)
+    referenced_by: [coop-and-team-chain, chain-tracker, hud]
+  - name: coop_hp_step
+    value: 50
+    unit: percent hp added per extra player (MEDIUM, LARGE, PART, CORE; 100 / 150 / 200 / 250)
+    range: "0-100"
+    source: design/gdd/coop-and-team-chain.md (F4)
+    referenced_by: [coop-and-team-chain, enemy-and-ai]
+  - name: coop_spawn_step
+    value: 20
+    unit: percent added to SMALL group size per extra player (100 / 120 / 140 / 160)
+    range: "0-50"
+    source: design/gdd/coop-and-team-chain.md (F5)
+    referenced_by: [coop-and-team-chain, wave-and-stage-director]
+  - name: team_bonus_share_max
+    value: 10
+    unit: percent of a stage total (upper bound with the team chain always on)
+    range: "5-15"
+    source: design/gdd/coop-and-team-chain.md (F8)
+    referenced_by: [coop-and-team-chain, scoring]
+
+  - name: enemy_hurtbox_budget
+    value: 32
+    unit: hurtboxes (enemy share of BM's 40-hurtbox reference scene; 8 reserved for boss)
+    range: "20-40"
+    source: design/gdd/enemy-and-ai.md (F9b)
+    referenced_by: [enemy-and-ai, bullet-manager, wave-and-stage-director]
+  - name: enemy_max_alive
+    value: 28
+    unit: enemies
+    range: "16-40"
+    source: design/gdd/enemy-and-ai.md (Rule 23)
+    referenced_by: [enemy-and-ai, wave-and-stage-director]
+  - name: enemy_ref_dps
+    value: 300
+    status: deprecated
+    comment: "Deprecated 2026-11-03: replaced by ref_dps (800, Plane kits). Kept for history; do not use."
+    unit: "damage units/s (one player tap-fire, 15 hits/s x 20 damage; PROVISIONAL, owned by Kits 11)"
+    range: "150-600"
+    source: design/gdd/enemy-and-ai.md (F8)
+    referenced_by: []
+  - name: ref_dps
+    value: 800
+    unit: "damage units/s (one competent player, 2 drones, on target; floor100(min(Lancer 857.8, Leech 832.5)))"
+    range: "400-1200"
+    source: design/gdd/plane-kits-lancer-leech.md (K8 Reference DPS for content budgets)
+    referenced_by: [plane-kits-lancer-leech, enemy-and-ai, boss-and-boss-parts, plane-kits-sentry-breaker]
+  - name: ref_uptime_pct
+    value: 70
+    unit: "% of fight time one competent player's fire lands"
+    range: "50-90"
+    source: design/gdd/boss-and-boss-parts.md (F6)
+    referenced_by: [boss-and-boss-parts, enemy-and-ai]
+  - name: peak_value
+    value: 1300
+    unit: points per point of the slot's boss chain peak (stage-end bonus)
+    range: "500-2000"
+    source: design/gdd/scoring.md (F5; raised from 1000 on 2026-11-03)
+    referenced_by: [scoring, stage-end-tally]
+  - name: kill_cancel_radius
+    value: "small 0, medium 40, large 72"
+    unit: px (circle cancel around the enemy on destroyed; cause slot = killer)
+    range: "medium 24-64, large 48-110"
+    source: design/gdd/enemy-and-ai.md (F7)
+    referenced_by: [enemy-and-ai, bullet-manager, powerups-and-drops, vfx-and-screen-feedback, tutorial]
+  - name: enemy_hurt_pad
+    value: 2
+    unit: px (hurtbox radius = r_e + pad)
+    range: "0-4"
+    source: design/gdd/enemy-and-ai.md (F3)
+    referenced_by: [enemy-and-ai, bullet-manager]
+  - name: enemy_fire_inset
+    value: 4
+    unit: px (fire zone inset from the play field; off-screen enemy emitters do not fire)
+    range: "0-16"
+    source: design/gdd/enemy-and-ai.md (F6)
+    referenced_by: [enemy-and-ai, bullet-pattern-library]
+  - name: enemy_plating
+    value: "120 ticks, 50 percent (LARGE only)"
+    unit: ticks / whole percent
+    range: "60-180 / 25-75"
+    source: design/gdd/enemy-and-ai.md (F5)
+    referenced_by: [enemy-and-ai, collision-damage-lives, boss-power-budget, vfx-and-screen-feedback]
+
+  - name: high_score_board_size
+    value: 10
+    unit: entries per board
+    range: "5-20"
+    source: design/gdd/save-settings-high-scores.md (F1)
+    referenced_by: [save-settings-high-scores, menus-title-plane-select, online-leaderboards-boss-rush]
+  - name: initials_length
+    value: 3
+    unit: characters (A-Z, 0-9, '-', '.')
+    range: "2-5"
+    source: design/gdd/save-settings-high-scores.md (Rule 12)
+    referenced_by: [save-settings-high-scores, menus-title-plane-select]
+  - name: score_store_max
+    value: 9007199254740991
+    unit: points (2^53 - 1; largest score Save stores exactly through JSON)
+    source: design/gdd/save-settings-high-scores.md (F2)
+    referenced_by: [save-settings-high-scores, scoring, online-leaderboards-boss-rush]
+  - name: save_file_version
+    value: 1
+    unit: int (scores.json and settings.json envelope version)
+    source: design/gdd/save-settings-high-scores.md (Rule 23)
+    referenced_by: [save-settings-high-scores]
+  - name: setting_access_reduce_flashing
+    value: "access.reduce_flashing (bool, default false)"
+    unit: setting key
+    note: "Registered by Accessibility (28), stored by Save (26)"
+    source: design/gdd/save-settings-high-scores.md (Rule 16)
+    referenced_by: [save-settings-high-scores, collision-damage-lives, critical-break, hud, vfx-and-screen-feedback, era-shift-and-plane-evolution, accessibility-options, stage-end-tally]
+
+  - name: bn_width_reserve_pct
+    value: 40
+    unit: percent (extra width reserved for Bengali vs English in every text box)
+    range: "30-60"
+    source: design/gdd/localization.md (F4, F5; art-bible section 7.5)
+    referenced_by: [localization, hud, menus-title-plane-select]
+  - name: bn_size_s
+    value: 17
+    unit: px (Bengali S/M tier; raise to 18-20 if the conjunct gate fails)
+    range: "17-20"
+    source: design/gdd/localization.md (F7; art-bible section 7.5)
+    referenced_by: [localization, hud, menus-title-plane-select]
+  - name: digit_grouping
+    value: "WESTERN (3-digit, ',' separator), both languages"
+    unit: enum WESTERN/INDIAN
+    source: design/gdd/localization.md (Rule 18, F1)
+    referenced_by: [localization, scoring, stage-end-tally, hud]
+  - name: supported_languages
+    value: "bn, en"
+    unit: locale codes
+    source: design/gdd/localization.md (Rule 1)
+    referenced_by: [localization, menus-title-plane-select]
+  # --- Wave 2 (2026-11-03): Plane kits (11) ---
+  - name: charge_hold_ticks
+    value: 18
+    unit: ticks (0.3 s held Fire before charge mode)
+    range: "12-30"
+    source: design/gdd/plane-kits-lancer-leech.md (Rule 4, K1)
+    referenced_by: [plane-kits-lancer-leech, player-plane, plane-kits-sentry-breaker, tutorial, touch-controls]
+  - name: shot_linger_ticks
+    value: 12
+    unit: ticks
+    range: "6-24"
+    source: design/gdd/plane-kits-lancer-leech.md (Rule 5)
+    referenced_by: [plane-kits-lancer-leech, plane-kits-sentry-breaker, tutorial, touch-controls]
+  - name: player_shot_damage
+    value: 20
+    unit: damage units (standard bullet; plane and drone bullets)
+    range: ">= armour_damage_min"
+    source: design/gdd/plane-kits-lancer-leech.md (K8)
+    referenced_by: [plane-kits-lancer-leech, collision-damage-lives, plane-kits-sentry-breaker]
+  - name: lancer_ability_speed
+    value: 90
+    unit: px/s (1.5 px/tick) while the laser is active
+    range: "60-120"
+    source: design/gdd/plane-kits-lancer-leech.md (Rule 22)
+    referenced_by: [plane-kits-lancer-leech, player-plane, touch-controls]
+  - name: laser_meter
+    value: "max 1000, min 400, burn 5/tick, fill 2/hit"
+    unit: meter units
+    source: design/gdd/plane-kits-lancer-leech.md (K3)
+    referenced_by: [plane-kits-lancer-leech]
+  - name: laser_damage
+    value: "60 per tick, every 3 ticks"
+    unit: damage units
+    range: "40-90"
+    source: design/gdd/plane-kits-lancer-leech.md (K6)
+    referenced_by: [plane-kits-lancer-leech, collision-damage-lives]
+  - name: drone_ability_cycle
+    value: "Lancer park 300 / cooldown 600; Leech latch 360 / cooldown 540; Sentry emplace 420 / cooldown 480; Breaker net 300 / cooldown 600 (all 930-tick cycles incl. 30 return; cooldown from last dock)"
+    unit: ticks
+    source: design/gdd/plane-kits-lancer-leech.md (K12)
+    referenced_by: [plane-kits-lancer-leech, plane-kits-sentry-breaker]
+  - name: kit_max_hits_per_s
+    value: 72
+    unit: raw counted hits/s per player (Leech tap + 4 latched drones)
+    note: "chain_cap 999 reached in no less than 13.9 s; data test requires >= 12 s"
+    source: design/gdd/plane-kits-lancer-leech.md (K9)
+    referenced_by: [plane-kits-lancer-leech, chain-tracker, scoring, plane-kits-sentry-breaker]
+  # --- Wave 2: Boss and boss parts (14) ---
+  - name: part_cancel_radius
+    value: 90
+    unit: px (bullet cancel circle on a boss-part kill)
+    range: "60-120"
+    source: design/gdd/boss-and-boss-parts.md (Rule 24)
+    referenced_by: [boss-and-boss-parts, bullet-manager, vfx-and-screen-feedback]
+  - name: last_part_cancel_radius
+    value: 150
+    unit: px (cancel circle when the last non-core part dies)
+    range: "100-220"
+    source: design/gdd/boss-and-boss-parts.md (Rule 24)
+    referenced_by: [boss-and-boss-parts, vfx-and-screen-feedback]
+  - name: core_armor_pct
+    value: 25
+    unit: percent of damage taken by an armoured core while parts live
+    range: "10-50"
+    source: design/gdd/boss-and-boss-parts.md (Rule 18)
+    referenced_by: [boss-and-boss-parts, collision-damage-lives]
+  - name: critical_pct
+    value: 15
+    unit: percent of core hp held as the critical reserve
+    range: "5-30"
+    source: design/gdd/boss-and-boss-parts.md (Rule 20)
+    referenced_by: [boss-and-boss-parts]
+  - name: critical_window_ticks
+    value: 420
+    unit: ticks (7 s) in which the critical core cannot die from shots
+    range: "300-600"
+    source: design/gdd/boss-and-boss-parts.md (Rule 22)
+    referenced_by: [boss-and-boss-parts, tutorial]
+  - name: critical_armor_pct
+    value: 20
+    unit: percent of damage taken by the core during the critical window
+    range: "5-40"
+    source: design/gdd/boss-and-boss-parts.md (Rule 22)
+    referenced_by: [boss-and-boss-parts]
+  - name: boss_hurtbox_budget
+    value: 8
+    unit: hurtbox circles per boss
+    range: "6-12"
+    source: design/gdd/boss-and-boss-parts.md (Rule 10)
+    referenced_by: [boss-and-boss-parts, enemy-and-ai, bullet-manager]
+  - name: boss_intro_ticks
+    value: 240
+    unit: ticks (180 entrance + 60 hold); parts IMMUNE and non-lethal
+    range: "180-360"
+    source: design/gdd/boss-and-boss-parts.md (Rule 12)
+    referenced_by: [boss-and-boss-parts, online-leaderboards-boss-rush]
+  - name: enrage_mult
+    value: 1.75
+    unit: multiple of the reference fight length T_fight
+    range: "1.5-2.5"
+    source: design/gdd/boss-and-boss-parts.md (F6)
+    referenced_by: [boss-and-boss-parts]
+  - name: boss_timeout_after_enrage
+    value: 1200
+    unit: ticks (20 s) between enrage start and the boss withdrawing
+    range: "600-2400"
+    source: design/gdd/boss-and-boss-parts.md (Rule 33)
+    referenced_by: [boss-and-boss-parts]
+  # --- Wave 2: Powerups and drops (13) ---
+  - name: items_per_cancel_cap
+    value: 100
+    unit: gems per cancel request (stride-sampled)
+    range: "50-200"
+    note: "Applies to bomb, kill and boss cancels alike (Bombs B9)"
+    source: design/gdd/powerups-and-drops.md (F3, F9)
+    referenced_by: [powerups-and-drops, scoring, enemy-and-ai, bullet-manager, bombs, plane-kits-sentry-breaker, tutorial]
+  - name: pickup_radius
+    value: 14
+    unit: px (plane centre; collect when d <= pickup_radius + r_item)
+    range: "10-20"
+    source: design/gdd/powerups-and-drops.md (F6)
+    referenced_by: [powerups-and-drops, player-plane]
+  - name: chain_pickup_amount
+    value: 10
+    unit: hits (add_bonus, refills window)
+    range: "5-25"
+    source: design/gdd/powerups-and-drops.md (Rule 25)
+    referenced_by: [powerups-and-drops, chain-tracker, tutorial]
+  - name: pod_pity_limit
+    value: 2
+    unit: non-pod SMALL/MEDIUM results before a forced pod
+    range: "1-4"
+    source: design/gdd/powerups-and-drops.md (F1)
+    referenced_by: [powerups-and-drops]
+  - name: item_pools
+    value: "gem_cap 300, drop_cap 24"
+    unit: items
+    range: "gem 150-600, drop 12-48"
+    source: design/gdd/powerups-and-drops.md (F7)
+    referenced_by: [powerups-and-drops]
+  # --- Wave 2: Bombs (12) ---
+  - name: bomb_start
+    value: 3
+    unit: bombs (per slot at run start, continue, drop-in and after death)
+    range: "2-5"
+    source: design/gdd/bombs.md (Rule 3, B1)
+    referenced_by: [bombs, game-events-and-session, plane-kits-sentry-breaker, tutorial, online-leaderboards-boss-rush]
+  - name: bomb_max
+    value: 5
+    unit: bombs (HUD shows at most 5 icons)
+    range: "3-5"
+    source: design/gdd/bombs.md (Rule 2, B1)
+    referenced_by: [bombs, game-events-and-session, plane-kits-sentry-breaker]
+  - name: bomb_stage_floor
+    value: 3
+    unit: bombs (minimum at stage_started; never lowers)
+    range: "1-5"
+    source: design/gdd/bombs.md (Rule 3, B1)
+    referenced_by: [bombs, game-events-and-session, plane-kits-sentry-breaker, online-leaderboards-boss-rush]
+  - name: bomb_invuln
+    value: 90
+    unit: ticks (1.5 s) requested on the accept tick
+    range: "60-150"
+    source: design/gdd/bombs.md (Rule 14, B3)
+    referenced_by: [bombs, collision-damage-lives, plane-kits-sentry-breaker]
+  - name: bomb_lockout
+    value: 90
+    unit: ticks (accept to next possible accept)
+    range: "85-150"
+    source: design/gdd/bombs.md (Rule 6, B2)
+    referenced_by: [bombs, plane-kits-sentry-breaker]
+  - name: bomb_chain_toll_pct
+    value: 50
+    unit: whole percent of the chain count lost per bomb (0 = off; waived when a Critical Break is armed)
+    range: "0-75"
+    source: design/gdd/bombs.md (Rule 12, B4)
+    referenced_by: [bombs, chain-tracker, plane-kits-sentry-breaker, tutorial]
+  - name: bomb_target_cap
+    value: 1000
+    unit: damage units per target per bomb (before bomb_part_pct)
+    range: "600-1500"
+    source: design/gdd/bombs.md (Rule 8, B7)
+    referenced_by: [bombs, collision-damage-lives, plane-kits-sentry-breaker]
+  - name: bomb_part_pct
+    value: 60
+    unit: whole percent of bomb damage dealt to boss parts (class PART)
+    range: "40-100"
+    source: design/gdd/bombs.md (Rule 10, B7)
+    referenced_by: [bombs, collision-damage-lives, plane-kits-sentry-breaker]
+  - name: bomb_damage
+    value: "Lancer 100 per hit (every 4 ticks); Leech hook 200, splash 100"
+    unit: damage units
+    range: "Lancer 60-150; hook 120-300"
+    source: design/gdd/bombs.md (B5, B6, B7)
+    referenced_by: [bombs, collision-damage-lives, plane-kits-sentry-breaker]
+  # --- Wave 2: Boss power budget (15) ---
+  - name: boss_budget_cap
+    value: "cap_base 13, cap_step 5 (Q_cap = 13 + 5 x stage: 18 / 23 / 28 / 33)"
+    unit: power score Q (dimensionless)
+    range: "cap_base 8-18, cap_step 3-8"
+    source: design/gdd/boss-power-budget.md (F4)
+    referenced_by: [boss-power-budget, boss-and-boss-parts, online-leaderboards-boss-rush]
+  - name: preview_wave_frac
+    value: "0.32, 0.36, 0.40, 0.45, 0.75 (waves 1-5, fraction of Q_cap)"
+    unit: fraction
+    range: "increasing; W1 0.25-0.40, W5 0.6-0.85"
+    source: design/gdd/boss-power-budget.md (F6)
+    referenced_by: [boss-power-budget]
+  - name: preview_transform_rows
+    value: "count/interval/speed percent: 60/160/75, 65/150/80, 70/145/85, 75/140/90 (wave 5 = wave 4 row)"
+    unit: percent
+    source: design/gdd/boss-power-budget.md (F5)
+    referenced_by: [boss-power-budget, enemy-and-ai]
+  - name: mechanics_per_boss
+    value: 4
+    unit: previewable mechanics (waves 1-4; wave 5 = combination)
+    source: design/gdd/boss-power-budget.md (Rule 2)
+    referenced_by: [boss-power-budget, boss-and-boss-parts]
+
+  # --- Wave 3a (2026-11-03): Critical Break (17), Wave director (16), Stage-end tally (21), Menus (22), HUD (20) ---
+  - name: cb_charge_min_ticks
+    value: 12
+    unit: ticks (consecutive charge-active ticks before a break can arm)
+    range: "6-30"
+    source: design/gdd/critical-break.md (F1)
+    referenced_by: [critical-break]
+  - name: cb_charge_lenience
+    value: 12
+    unit: ticks (charge may have ended this long ago; equals laser_exit_grace)
+    range: "0-30"
+    source: design/gdd/critical-break.md (F1)
+    referenced_by: [critical-break, bombs]
+  - name: cb_hit_window
+    value: 12
+    unit: ticks (max age of the last charge hit on the core)
+    range: "6-30"
+    source: design/gdd/critical-break.md (F1)
+    referenced_by: [critical-break, bombs]
+  - name: warning_ticks
+    value: 150
+    unit: ticks (WARNING plate duration; starts at wave-5 end + 90)
+    range: "120-180"
+    source: design/gdd/wave-and-stage-director.md (Rule 24)
+    referenced_by: [wave-and-stage-director, boss-and-boss-parts, hud]
+  - name: boss_started_offset
+    value: 480
+    unit: ticks from wave-5 end to boss_started (90 pre-warning + 150 warning + 240 intro)
+    source: design/gdd/wave-and-stage-director.md (Rule 24)
+    referenced_by: [wave-and-stage-director, boss-and-boss-parts, chain-tracker]
+  - name: sweep_min_ticks
+    value: 90
+    unit: ticks (minimum boss_defeated -> stage_cleared; stage_cleared = max(boss_gone, boss_defeated + 90), watchdog +360)
+    range: "75-180"
+    source: design/gdd/wave-and-stage-director.md (Rule 24)
+    referenced_by: [wave-and-stage-director, powerups-and-drops, stage-end-tally]
+  - name: early_clear_gap
+    value: 24
+    unit: ticks (field empty after last spawn -> wave ends)
+    range: "0-45"
+    source: design/gdd/wave-and-stage-director.md (Rule 14)
+    referenced_by: [wave-and-stage-director]
+  - name: chain_gap_budget
+    value: 45
+    unit: ticks (max no-target stretch outside rests; chain_window - ceil(chain_window/4))
+    range: "30-60"
+    source: design/gdd/chain-tracker.md (F1); enforced by wave-and-stage-director (F6)
+    referenced_by: [chain-tracker, wave-and-stage-director]
+  - name: wave_curve_cap
+    value: "60 / 80 / 100 / 120 / 150"
+    unit: bullets (N_scene at N=1, waves 1-5; hard ceiling 1,700)
+    source: design/gdd/wave-and-stage-director.md (F3)
+    referenced_by: [wave-and-stage-director, enemy-and-ai]
+  - name: carrier_plan
+    value: "8 per stage: 4 SMALL, 2 MEDIUM, 2 LARGE; >= 1 per wave; >= 180 ticks apart; not scaled"
+    unit: carriers
+    source: design/gdd/powerups-and-drops.md; placed by wave-and-stage-director (F5)
+    referenced_by: [powerups-and-drops, wave-and-stage-director, enemy-and-ai]
+  - name: stage_par_window
+    value: "14400-18000"
+    unit: ticks (T_par of an MVP stage)
+    source: design/gdd/wave-and-stage-director.md (F7)
+    referenced_by: [wave-and-stage-director]
+  - name: tally_row_gap
+    value: 15
+    unit: ticks (0.25 s per tally row, art bible 7.4)
+    range: "10-30"
+    source: design/gdd/stage-end-tally.md (TF1)
+    referenced_by: [stage-end-tally]
+  - name: tally_countup_ticks
+    value: 30
+    unit: ticks (point count-up window; hero chain 45)
+    range: "15-60"
+    source: design/gdd/stage-end-tally.md (TF2)
+    referenced_by: [stage-end-tally]
+  - name: tally_skip_lockout
+    value: 90
+    unit: ticks from tally start before a skip press counts (confirm lockout 30)
+    range: "45-180"
+    source: design/gdd/stage-end-tally.md (Rule 15)
+    referenced_by: [stage-end-tally]
+  - name: tally_settle_hold
+    value: 300
+    unit: ticks of auto-advance after the last column settles
+    range: "180-900"
+    source: design/gdd/stage-end-tally.md (Rule 16)
+    referenced_by: [stage-end-tally]
+  - name: start_delay_ticks
+    value: 45
+    unit: ticks (Lobby commit delay after every joined slot is Locked)
+    range: "0-120"
+    source: design/gdd/menus-title-plane-select.md (F2)
+    referenced_by: [menus-title-plane-select, game-events-and-session]
+  - name: afk_release_ticks
+    value: 1800
+    unit: ticks (30 s; Choosing slot released if another slot is Locked)
+    range: "900-3600"
+    source: design/gdd/menus-title-plane-select.md (F3)
+    referenced_by: [menus-title-plane-select]
+  - name: lobby_idle_ticks
+    value: 3600
+    unit: ticks (60 s no input from any joined slot -> Title)
+    range: "1800-7200"
+    source: design/gdd/menus-title-plane-select.md (F3)
+    referenced_by: [menus-title-plane-select]
+  - name: hold_confirm_ticks
+    value: 60
+    unit: ticks (hold-to-confirm for destructive actions)
+    range: "30-120"
+    source: design/gdd/menus-title-plane-select.md (F6)
+    referenced_by: [menus-title-plane-select]
+  - name: resume_beat_ticks
+    value: 45
+    unit: ticks (3-pip beat before play resumes; tree paused)
+    range: "0-90"
+    source: design/gdd/menus-title-plane-select.md (F9)
+    referenced_by: [menus-title-plane-select, input-and-player-mapping]
+  - name: dropin_pick_ticks
+    value: 900
+    unit: ticks (mid-run plane pick auto-cancels)
+    range: "600-1800"
+    source: design/gdd/menus-title-plane-select.md (Rule 26)
+    referenced_by: [menus-title-plane-select, game-events-and-session]
+  - name: results_input_lock_ticks
+    value: 30
+    unit: ticks (Results ignores Confirm)
+    range: "15-60"
+    source: design/gdd/menus-title-plane-select.md (Rule 34)
+    referenced_by: [menus-title-plane-select]
+  - name: name_entry_seconds
+    value: 30
+    unit: seconds (shared name-entry timer; 1800 ticks)
+    range: "15-60"
+    source: design/gdd/save-settings-high-scores.md (Tuning Knobs)
+    referenced_by: [save-settings-high-scores, menus-title-plane-select]
+  - name: hud_chain_bar_px
+    value: "94 (1-2P), 82 (3-4P), 42 (compact 48 px form)"  # was: "94 (1-2P), 82 (3-4P)" (HUD compact rects added 2026-11-03, consistency check)
+    unit: px (chain plate interior width; Chain F6 BAR_PX)
+    range: "plate interior"
+    source: design/gdd/hud.md (Rule 17, HF2)
+    referenced_by: [hud, chain-tracker]
+  - name: hud_boss_bar_px
+    value: "312 outer, 310 interior (x 24-335)"
+    unit: px
+    source: design/gdd/hud.md (Rule 26, HF3)
+    referenced_by: [hud, boss-and-boss-parts]
+  - name: hud_digit_tiers
+    value: "D24 cell15/sep6, D17 11/4, D16 10/4, D12 8/3, D10 6/2"
+    unit: px (digit height 24/17/16/12/10)
+    note: "D12 and D10 added by HUD; Localization F3 formula"
+    source: design/gdd/hud.md (Rule 12)
+    referenced_by: [hud, localization]
+  - name: score_roll_instant_max
+    value: 5000
+    unit: points
+    range: "0-50000"
+    source: design/gdd/hud.md (HF1)
+    referenced_by: [hud]
+  - name: banner_wait_max
+    value: 180
+    unit: ticks (banner waits for an empty field, then is skipped)
+    range: "60-300"
+    note: "HUD owns banners; supersedes Critical Break's provisional 120-tick banner wait (wave 3a, 2026-11-03).
+      Wave 5 batch 2 (2026-11-03): `cb_banner_wait_max` is RETIRED everywhere - critical-break.md F5,
+      its variable and tuning tables, its defaults list and AC-44 all read this constant now, and a
+      stray `cb_banner_wait_max` key in `critical_break_rules.tres` must fail the data lint."
+    source: design/gdd/hud.md (Rule 27)
+    referenced_by: [hud, critical-break]
+  # --- Wave 5 batch 2 (2026-11-03): UX review cross-document amendments ---
+  - name: continue_accept_verb
+    value: fire
+    unit: input verb (`CONTINUE_ACCEPT`)
+    note: "ONE verb accepts a Continue, on both surfaces that can show the prompt: the in-stage HUD
+      Continue plate (hud.md Rule 24) and the Stage tally's Continue column (stage-end-tally.md
+      Rule 17). `action_glyph(slot, CONTINUE_ACCEPT)` resolves to that slot's Fire glyph. START DOES
+      NOT accept a Continue - it still pauses - so there is no accept-versus-Pause priority rule.
+      Only the slot in Continue can accept its own. In the Tally the press is not a tally skip."
+    source: design/gdd/input-and-player-mapping.md (Rule 24b)
+    referenced_by: [input-and-player-mapping, hud, stage-end-tally, game-events-and-session]
+  - name: menu_hold_verb
+    value: fire
+    unit: input verb for every hold-to-confirm
+    note: "Holds count `fire.held_ticks` ONLY, on every screen (menus-title-plane-select.md F6,
+      interaction-patterns.md P04). Start never starts, advances or completes a hold anywhere;
+      Settings opened from Pause ignores Start altogether (Menus Rule 43). Hold length is
+      `confirm_hold` (60 at NORMAL, 40 SHORT, 90 LONG), including the 'Reset display' menu item,
+      which has the same RESULT as the `display_reset` hotkey but not its 2 s real-time length."
+    source: design/gdd/menus-title-plane-select.md (F6, Rule 43)
+    referenced_by: [menus-title-plane-select, display-scaler-and-bezel, input-and-player-mapping, accessibility-options]
+  - name: reset_settings_keep_list
+    value: "language, access.first_run_prompt_done, profile.*, tutorial.*, touch.hints_seen"
+    unit: setting keys kept by reset_settings()
+    note: "Extended 2026-11-03 (wave 5 batch 2) from `profile.last_initials` + `tutorial.*`.
+      Resetting these would make the photosensitivity plate reappear, flip the UI language back to
+      an OS guess and re-show the touch hints. Unknown keys are still kept untouched (Rule 15)."
+    source: design/gdd/save-settings-high-scores.md (Rule 30, AC-26)
+    referenced_by: [save-settings-high-scores, accessibility-options, localization, touch-controls, tutorial, menus-title-plane-select]
+  # --- Wave 3b (2026-11-03): Audio (24), VFX (25), Era shift (19), Parallax (23), Accessibility (28) ---
+  - name: audio_retrigger_gap_ticks
+    value: 3
+    unit: ticks (50 ms) per sound ID
+    source: design/gdd/bullet-manager.md (A1); design/gdd/audio.md (F2)
+    referenced_by: [bullet-manager, bullet-pattern-library, audio]
+  - name: bullet_sfx_voice_cap
+    value: 8
+    unit: voices
+    source: design/gdd/bullet-manager.md (A2); design/gdd/audio.md (Rule 7)
+    referenced_by: [bullet-manager, bombs, plane-kits-lancer-leech, powerups-and-drops, audio]
+  - name: audio_max_global_voices
+    value: 32
+    unit: voices (SFX only)
+    range: "16-64"
+    source: design/gdd/audio.md
+    referenced_by: [audio]
+  - name: audio_target_lufs
+    value: -16
+    unit: LUFS integrated (60 s stage capture, defaults), true peak <= -1.0 dBTP
+    source: design/gdd/audio.md
+    referenced_by: [audio]
+  - name: vfx_particle_cap
+    value: 150
+    unit: live pooled effect instances (all players)
+    range: "100-200"
+    note: "Art bible 8.6 total. Class caps are non-additive; tiers T0-T4 decide eviction."
+    source: design/gdd/vfx-and-screen-feedback.md (Rule 16)
+    referenced_by: [vfx-and-screen-feedback, bullet-manager, collision-damage-lives, enemy-and-ai, boss-and-boss-parts, parallax-and-environment]
+  - name: vfx_effects_levels
+    value: "FULL 100, REDUCED 50, MINIMAL 25 (level_pct)"
+    unit: percent of counts; setting access.effects_level
+    source: design/gdd/vfx-and-screen-feedback.md (Rule 21)
+    referenced_by: [vfx-and-screen-feedback, save-settings-high-scores, accessibility-options]
+  - name: vfx_density_by_players
+    value: "100 / 100 / 80 / 70 (N = 1..4), tier 3-4 classes only"
+    unit: percent
+    range: "50-100"
+    source: design/gdd/vfx-and-screen-feedback.md (F2)
+    referenced_by: [vfx-and-screen-feedback, coop-and-team-chain]
+  - name: death_ring_full_max
+    value: 2
+    unit: full death rings at once (others compact)
+    range: "1-4"
+    source: design/gdd/vfx-and-screen-feedback.md (Rule 23)
+    referenced_by: [vfx-and-screen-feedback, collision-damage-lives, coop-and-team-chain]
+  - name: cancel_puff_caps
+    value: "sweep 40, Critical Break cancel 12"
+    unit: puffs per cancel request
+    range: "20-60 / 0-24"
+    source: design/gdd/vfx-and-screen-feedback.md (F3)
+    referenced_by: [vfx-and-screen-feedback, bullet-manager, bombs, critical-break]
+  - name: setting_access_effects_level
+    value: "access.effects_level (enum FULL/REDUCED/MINIMAL, default FULL)"
+    unit: setting key
+    note: "Registered by Accessibility (28), stored by Save (26)"
+    source: design/gdd/vfx-and-screen-feedback.md (Rule 34)
+    referenced_by: [vfx-and-screen-feedback, save-settings-high-scores, accessibility-options]
+  - name: setting_access_reduce_pulsing
+    value: "access.reduce_pulsing (bool, default false)"
+    unit: setting key
+    source: design/gdd/vfx-and-screen-feedback.md (Rule 34)
+    referenced_by: [vfx-and-screen-feedback, save-settings-high-scores, accessibility-options, hud]
+  - name: era_ladder
+    value: "behaviours Straight / Accelerate / Curve / Warp by era 0-3; options flak_fuse (base), aim_lock (era 1), reaim_each_volley (era 2), none (era 3)"
+    unit: ladder
+    note: "Era 2-3 options are Target-tier proposals. One new behaviour and at most one new option per era."
+    source: design/gdd/era-shift-and-plane-evolution.md (Rules 8, 9)
+    referenced_by: [era-shift-and-plane-evolution, boss-power-budget, enemy-and-ai, bullet-pattern-library]
+  - name: era_transition_ticks
+    value: "full 201, short 96 (release tick from the tally_exit tick); swap commit at 90"
+    unit: ticks
+    range: "short 60-120; full 150-240 (cap era_hold_max 240)"
+    source: design/gdd/era-shift-and-plane-evolution.md (F1)
+    referenced_by: [era-shift-and-plane-evolution, stage-end-tally]
+  - name: era_luma_step_max_pct
+    value: 10
+    unit: percent of canvas relative luminance per full-canvas step
+    range: "5-10"
+    source: design/gdd/era-shift-and-plane-evolution.md (F5)
+    referenced_by: [era-shift-and-plane-evolution, parallax-and-environment]
+  - name: era_vram_budget
+    value: "always 18 MB, per-era core 20 MB + env 36 MB; staged peak 74 MB, early peak 110 MB"
+    unit: MB
+    range: "target 96, hard cap 128"
+    source: design/gdd/era-shift-and-plane-evolution.md (F3)
+    referenced_by: [era-shift-and-plane-evolution, parallax-and-environment]
+  - name: strip_speed_mode
+    value: "V_EFF (v_strip = (speed + v_cap) / 2 for Accelerate; Warp warp_speed; Curve speed), clamped 70-480"
+    unit: enum V_EFF / INITIAL
+    source: design/gdd/era-shift-and-plane-evolution.md (F4)
+    referenced_by: [era-shift-and-plane-evolution, enemy-and-ai, wave-and-stage-director]
+  - name: parallax_factor_pct
+    value: "L0 8 / L1 25 / L2 50 / L3 100 / L4 130"
+    unit: percent of ground scroll
+    note: "L3 = 100 so L3 offset = S div 100 (ground sync)"
+    source: design/gdd/parallax-and-environment.md (Rule 6, F2)
+    referenced_by: [parallax-and-environment, wave-and-stage-director, enemy-and-ai]
+  - name: bg_zone_px
+    value: "EDGE 0-71 / 288-359; SHOULDER 72-119 / 240-287; CORE 120-239"
+    unit: canvas px
+    source: design/gdd/parallax-and-environment.md (Rule 15)
+    referenced_by: [parallax-and-environment, accessibility-options]
+  - name: bg_overscan_px
+    value: 8
+    unit: canvas px (shake cap for world layers)
+    range: "4-16"
+    source: design/gdd/parallax-and-environment.md (Rule 26)
+    referenced_by: [parallax-and-environment, vfx-and-screen-feedback, display-scaler-and-bezel]
+  - name: boss_plate_blend_ticks
+    value: 120
+    unit: ticks
+    range: "60-180"
+    source: design/gdd/parallax-and-environment.md (Rule 19, F5)
+    referenced_by: [parallax-and-environment]
+  - name: boss_grade_ticks
+    value: 90
+    unit: ticks
+    range: "60-120"
+    note: "boss_rgb 204/196/184; vignette outer alpha 102 of 255"
+    source: design/gdd/parallax-and-environment.md (Rule 20, F6, F7)
+    referenced_by: [parallax-and-environment, boss-and-boss-parts]
+  - name: env_vram_budget_mib
+    value: 28
+    unit: MiB (planned 22.5)
+    range: "20-36"
+    source: design/gdd/parallax-and-environment.md (F10)
+    referenced_by: [parallax-and-environment, era-shift-and-plane-evolution]
+  - name: stage_fade_levels
+    value: "85,76,66,57,47,38,28,19,9,0 (4 ticks per step)"
+    unit: percent dim
+    note: "9 steps of at most 10 points; Era shift F5"
+    source: design/gdd/parallax-and-environment.md (Rule 28a)
+    referenced_by: [parallax-and-environment, era-shift-and-plane-evolution]
+  - name: text_size_steps
+    value: "mult 100/125/150/200 percent; S/M Latin cap 12/15/18/24; Bengali 17/21/25/33 at bn_size_s 17; L and XL identity"
+    unit: percent / px
+    range: "steps 0-3"
+    source: design/gdd/accessibility-options.md (F1)
+    referenced_by: [accessibility-options, localization, menus-title-plane-select, hud]
+  - name: game_speed_steps
+    value: "50-100 percent in steps of 10, default 100; ASSIST (marks run PRACTICE)"
+    unit: percent of 60 Hz ticks
+    range: "50-100"
+    source: design/gdd/accessibility-options.md (F2)
+    referenced_by: [accessibility-options, game-events-and-session, input-and-player-mapping]
+  - name: bg_dim_pct
+    value: 65
+    unit: percent (environment layers only)
+    range: "40-90"
+    source: design/gdd/accessibility-options.md (F4)
+    referenced_by: [accessibility-options, parallax-and-environment]
+  - name: ally_shot_dim_floor
+    value: "dim 0/25/50; op_floor 25"
+    unit: percent
+    source: design/gdd/accessibility-options.md (F3)
+    referenced_by: [accessibility-options, bullet-manager]
+  - name: continue_timer_ticks
+    value: "STANDARD 600, EXTENDED 1800, UNTIMED"
+    unit: game ticks (accessibility override of continue_seconds, outside its 5-15 s range by design)
+    source: design/gdd/accessibility-options.md (F9)
+    referenced_by: [accessibility-options, game-events-and-session]
+  - name: hitbox_ring_sizes
+    value: "22 px NORMAL, 30 px LARGE (P4 inner/outer 30/32)"
+    unit: px
+    source: design/gdd/accessibility-options.md (F7)
+    referenced_by: [accessibility-options, player-plane]
+  # --- Wave 4 (2026-11-03): Plane kits Sentry, Breaker (29), Tutorial (30), Touch controls (31), Online leaderboards / boss rush (32) ---
+  - name: net_erase_budget
+    value: 30
+    unit: bullets erased per Breaker drone per use (then the drone is SPENT)
+    range: "15-45"
+    note: "Average erase bound 4 x 30 / 15.5 s = 7.74 bullets/s per slot; data test limit 10/s"
+    source: design/gdd/plane-kits-sentry-breaker.md (Rule 23, SB4)
+    referenced_by: [plane-kits-sentry-breaker, boss-power-budget, bullet-pattern-library]
+  - name: breaker_stock
+    value: "max 60, bolt cost 2, credit <= 4 per pulse, death keep 0"
+    unit: stock units
+    source: design/gdd/plane-kits-sentry-breaker.md (Rules 20-21, 25)
+    referenced_by: [plane-kits-sentry-breaker, hud]
+  - name: net_safe_clear
+    value: 40
+    unit: px (zone edge to plane centre; net never erases closer)
+    range: "30-60"
+    source: design/gdd/plane-kits-sentry-breaker.md (Rule 24, SB5)
+    referenced_by: [plane-kits-sentry-breaker, bullet-manager]
+  - name: bastion_bomb
+    value: "r 40 -> 104 (4 px/tick), 72 ticks, 60 dmg every 6 ticks, centre 56 px ahead of the plane"
+    unit: px / ticks / damage
+    source: design/gdd/plane-kits-sentry-breaker.md (Rule 31, SB7)
+    referenced_by: [plane-kits-sentry-breaker, bombs]
+  - name: backlash_bomb
+    value: "wall 12 px/tick, half height 12, 500 dmg once per target (PART 300), effect_ticks 2-49"
+    unit: px / ticks / damage
+    source: design/gdd/plane-kits-sentry-breaker.md (Rule 32, SB7)
+    referenced_by: [plane-kits-sentry-breaker, bombs]
+  - name: kit_player_bullet_tags
+    value: "0 plane shot, 1 drone bullet, 2 charge shot, 3 return bolt"
+    unit: tag id
+    source: design/gdd/plane-kits-sentry-breaker.md (Rule 2)
+    referenced_by: [plane-kits-sentry-breaker, plane-kits-lancer-leech, bullet-manager, collision-damage-lives, critical-break]
+  - name: hint_limits
+    value: "max_shows 2, stage_max 2, cooldown 1800, expire 7200"
+    unit: shows / ticks
+    range: "max_shows 1-3, stage_max 1-4"
+    source: design/gdd/tutorial.md (F5)
+    referenced_by: [tutorial]
+  - name: drill_bullet_cap
+    value: 100
+    unit: enemy bullets alive in any drill
+    range: "60-150"
+    source: design/gdd/tutorial.md (Rule 9e)
+    referenced_by: [tutorial]
+  - name: school_required_mask
+    value: "1023 & available_mask(plane)"
+    unit: bitmask (bits 0-9; bit 10 team optional), evaluated per plane
+    note: "Changed 2026-11-03 (UX amendments wave 5 batch 2) from the fixed 1023. A drill is
+      required on a plane only if that plane publishes the kit events the drill reads
+      (Rule 12 `available`). `drills_done` stays ONE profile-wide bitmask; only the demanded
+      bits are per plane. `tutorial.complete` = OR over planes of complete(plane). In MVP both
+      planes publish every event, so the effective mask is 1023 and MVP behaviour is unchanged.
+      Authoring plane-specific replacement drills for Sentry/Breaker was rejected."
+    source: design/gdd/tutorial.md (F3, Rule 12)
+    referenced_by: [tutorial, save-settings-high-scores, plane-kits-sentry-breaker]
+  - name: setting_tutorial_keys
+    value: "tutorial.drills_done int 0, tutorial.hint_counts int 0, tutorial.school_seen bool false, tutorial.offered bool false, tutorial.hints bool true"
+    unit: setting keys
+    source: design/gdd/tutorial.md (Rule 24)
+    referenced_by: [tutorial, save-settings-high-scores]
+  - name: touch_target_min_mm
+    value: 9
+    unit: mm (smallest visual target; hit areas >= 12 mm)
+    range: "locked"
+    source: design/gdd/touch-controls.md (Rule 7, TF7)
+    referenced_by: [touch-controls, menus-title-plane-select]
+  - name: touch_strip_mm
+    value: "15 (3 + 12 x s_btn); buttons Hold 12, Drone 11, Bomb 12, Pause 9; hit_pad 1.5"
+    unit: mm
+    range: "13-17"
+    source: design/gdd/touch-controls.md (TF2)
+    referenced_by: [touch-controls, display-scaler-and-bezel]
+  - name: touch_leash_px
+    value: 12
+    unit: px (pending drag stored by the plane; 1/16 px fixed point)
+    range: "8-32"
+    source: design/gdd/touch-controls.md (TF4)
+    referenced_by: [touch-controls, player-plane]
+  - name: touch_autofire_period
+    value: 10
+    unit: ticks (must be <= shot_linger_ticks)
+    range: "6-12"
+    source: design/gdd/touch-controls.md (TF6)
+    referenced_by: [touch-controls, plane-kits-lancer-leech]
+  - name: slot_stage_bound
+    value: 31000000
+    unit: points (hard per-slot per-stage score bound used for online plausibility)
+    note: "Owned by Scoring (8); read by Online leaderboards F1. Change requires a ruleset bump."
+    source: design/gdd/scoring.md (Edge Cases, 'Hard bound'); design/gdd/online-leaderboards-boss-rush.md (F1)
+    referenced_by: [scoring, online-leaderboards-boss-rush]
+  - name: replay_max_bytes
+    value: 262144
+    unit: bytes (compressed replay upload cap; raw cap 1048576)
+    range: "131072-524288"
+    source: design/gdd/online-leaderboards-boss-rush.md (F3)
+    referenced_by: [online-leaderboards-boss-rush]
+  - name: online_verify_depth
+    value: 100
+    unit: ranks per board verified by replay (plus 5 percent random audit)
+    range: "25-500"
+    source: design/gdd/online-leaderboards-boss-rush.md (Rule 24)
+    referenced_by: [online-leaderboards-boss-rush]
+  - name: replay_hash_interval_ticks
+    value: 600
+    unit: ticks between state-hash checkpoints
+    range: "300-1800"
+    source: design/gdd/online-leaderboards-boss-rush.md (Rule 22)
+    referenced_by: [online-leaderboards-boss-rush]
+  - name: min_fight_pct
+    value: 25
+    unit: percent of T_fight (fastest believable boss fight; PROVISIONAL)
+    range: "10-40"
+    source: design/gdd/online-leaderboards-boss-rush.md (F2)
+    referenced_by: [online-leaderboards-boss-rush, boss-and-boss-parts]
+  - name: rush_start_drones
+    value: 4
+    unit: drones (Boss Rush and Single Boss start and refit)
+    range: "2-max_drones"
+    source: design/gdd/online-leaderboards-boss-rush.md (Rule 37)
+    referenced_by: [online-leaderboards-boss-rush, plane-kits-lancer-leech]
+  - name: flak_fuse_max
+    value: 8
+    unit: lit flak fuses per scene (a volley that would light a 9th is skipped, counts as fired, draws RNG)
+    source: design/gdd/bullet-pattern-library.md (wave 4 decision, 2026-11-03)
+    referenced_by: [bullet-pattern-library, wave-and-stage-director, vfx-and-screen-feedback]
+  # --- Final doc closeout (2026-11-03): UI colour tokens that cross systems ---
+  - name: ALARM_RED
+    value: "#E03A3E"
+    unit: hex colour (HudTheme / UI palette)
+    note: >-
+      Fill-only red: boss-bar fill, chain-expiry end cap, plate edge and error-glyph
+      fill. 3.95:1 on Cabinet Char #1E1B18, below 4.5:1, so it is NEVER a text fill
+      anywhere. "Two reds, two jobs" (art bible 4.1, arcade-ui-style 3.1 rule 3).
+    source: design/art/art-bible.md (4.1, 7.10)
+    referenced_by: [hud, menus-title-plane-select, save-settings-high-scores, accessibility-options]
+  - name: ALARM_FLARE
+    value: "#F2494D"
+    unit: hex colour (HudTheme / UI palette)
+    note: >-
+      TEXT ONLY - never a fill of any kind. Same hue as ALARM_RED (358.6 HSL), value
+      raised: 4.76:1 on Cabinet Char #1E1B18 and 4.97:1 on #2A0F12 (hand-computed WCAG
+      relative luminance, not a renderer measurement). Use: at most ONE headline status
+      line per screen, tier S or larger, 1 px outline, with the explanatory sentence in
+      Cream repeating the same words and an ALARM_RED plate edge and/or error glyph still
+      present; renders Cream under access.hud_contrast HIGH; never in the HUD strip, a slot
+      column, beside a P1 pip or ring, or in the play field; never era-tinted. The 4.76:1
+      headline is the recorded exception to the 7:1 plated-menu line
+      (design/accessibility-requirements.md 3.2). OPEN: protanopia re-measurement.
+    source: design/art/art-bible.md (4.1, 7.10); production/ux-reports/_art-director-decisions.md (Decision 1)
+    referenced_by: [hud, menus-title-plane-select, save-settings-high-scores, accessibility-options]
+formulas:
+  - name: extend_threshold
+    expression: "round(extend_unit * (extend_first_mult + n * extend_step_mult)), compared as integers"
+    variables: [extend_unit, extend_first_mult, extend_step_mult, n]
+    inputs_owned_elsewhere: {extend_unit: "Scoring (8) - 3,000,000 (scoring F7)"}
+    output: "score thresholds; 0..max_score_extends extends due"
+    source: design/gdd/game-events-and-session.md (F2)
+    referenced_by: [game-events-and-session, scoring, stage-end-tally]
+  - name: drone_count
+    expression: "min(max_drones, drone_count + powerups_collected); 0 on death"
+    variables: [drone_count, powerups_collected, max_drones]
+    output: "0-4"
+    source: design/gdd/game-events-and-session.md (F1)
+    referenced_by: [game-events-and-session, plane-kits-lancer-leech, powerups-and-drops]
+  - name: one_credit_clear
+    expression: "joined_at_run_start AND continues_used == 0 AND run_ended_by == ENDING AND state != Inactive"
+    variables: [joined_at_run_start, continues_used, run_ended_by, state]
+    output: bool
+    source: design/gdd/game-events-and-session.md (F7)
+    referenced_by: [game-events-and-session, save-settings-high-scores, menus-title-plane-select, online-leaderboards-boss-rush]
+  - name: swept_hit
+    expression: "q0 = p_b(T) - (p_t(T) - p_t(T+1)); q1 = p_b(T+1); hit = dist(p_t(T+1), segment q0->q1) <= r_b + r_t"
+    variables: [p_b, p_t, r_b, r_t]
+    output: bool
+    source: design/gdd/bullet-manager.md (F6)
+    referenced_by: [bullet-manager, collision-damage-lives]
+  - name: body_contact
+    expression: "q0 = p_pl(T) - (p_e(T) - p_e(T+1)); q1 = p_pl(T+1); contact = segdist2(q0->q1, a->b) <= (r_pl + r_e)^2"
+    variables: [p_pl, p_e, a, b, r_pl, r_e]
+    output: bool (reduces to swept_hit when a == b)
+    source: design/gdd/collision-damage-lives.md (C1)
+    referenced_by: [collision-damage-lives, enemy-and-ai]
+  - name: armour_damage
+    expression: "dealt = max(1, (damage * armor_pct) div 100) if armoured; hp' = max(1, hp - dealt) if armoured else max(0, hp - dealt); integer hp/damage"
+    variables: [damage, armor_pct, hp, mode]
+    output: "dealt 0..damage; result ignored/hit/destroyed"
+    source: design/gdd/collision-damage-lives.md (C4)
+    referenced_by: [collision-damage-lives, enemy-and-ai, plane-kits-lancer-leech, boss-and-boss-parts]
+  - name: chain_critical_break
+    expression: "after = min(chain_cap, before * cb_mult + cb_add)"
+    variables: [before, cb_mult, cb_add, chain_cap]
+    output: "cb_add..999; capped from before >= 317 at defaults"
+    source: design/gdd/chain-tracker.md (F4)
+    referenced_by: [chain-tracker, critical-break]
+  - name: chain_drop_timing
+    expression: "window_left = W if fresh this tick else window_left - 1; drop when window_left == 0 and count > 0 (hit on T -> drop at end of T+W)"
+    variables: [chain_window, window_left, fresh]
+    output: "0..W ticks"
+    source: design/gdd/chain-tracker.md (F2)
+    referenced_by: [chain-tracker]
+  - name: hit_score
+    expression: "((hit_base + count_after) * team_pct + 50) / 100, integer division"
+    variables: [hit_base, count_after, team_pct]
+    output: "11-1,009 solo; 13-1,211 at 120%"
+    source: design/gdd/scoring.md (F1)
+    referenced_by: [scoring, coop-and-team-chain]
+  - name: item_chain_factor
+    expression: "item_base * (1 + min(count, factor_cap_count) / factor_step); defaults 500, 50"
+    variables: [item_base, count, factor_cap_count, factor_step]
+    output: "100-11,000"
+    source: design/gdd/scoring.md (F3)
+    referenced_by: [scoring, powerups-and-drops]
+  - name: critical_break_score
+    expression: "cb_unit * (before * cb_mult + cb_add) uncapped; ldb = ldb_per_life * max(0, lives - 1)"
+    variables: [cb_unit, before, cb_mult, cb_add, ldb_per_life, lives]
+    output: "50,000-3,047,000 (+0-250,000 LDB)"
+    source: design/gdd/scoring.md (F4)
+    referenced_by: [scoring, critical-break]
+  - name: cap_hold_streak
+    expression: "every 60 ticks at chain_cap (not Frozen, Alive): hold_unit * min(cap_ticks / 60, hold_ramp_s); defaults 500, 30"
+    variables: [cap_ticks, hold_unit, hold_ramp_s]
+    output: "500-15,000 per second"
+    source: design/gdd/scoring.md (F6)
+    referenced_by: [scoring, boss-and-boss-parts]
+  - name: pattern_target_rotation
+    expression: "target = first s in [(prev+1)..(prev+4)] mod 4 with Alive(s); none if no Alive slot; advances once per burst (lock tick for aim-lock patterns)"
+    variables: [prev, Alive]
+    output: "slot 0-3 or none"
+    source: design/gdd/bullet-pattern-library.md (F4)
+    referenced_by: [bullet-pattern-library, bullet-manager, enemy-and-ai, boss-and-boss-parts]
+  - name: spawn_safety
+    expression: "skip bullet if |spawn - p.centre| < R_safe for any Active player; require R_safe >= r_p + r_b + v_spawn * t_react / 60 (t_react 9)"
+    variables: [spawn, R_safe, r_p, r_b, v_spawn, t_react]
+    output: bool
+    source: design/gdd/bullet-pattern-library.md (F7)
+    referenced_by: [bullet-pattern-library]
+  - name: press_edge
+    expression: "held = down_now OR latch_press; pressed = held AND NOT held_prev; released = NOT held AND held_prev; held_ticks = held ? prev+1 : 0"
+    variables: [down_now, latch_press, held_prev, held_ticks]
+    output: "pressed/released true for exactly one tick; sub-tick tap -> pressed T, released T+1"
+    source: design/gdd/input-and-player-mapping.md (F1)
+    referenced_by: [input-and-player-mapping, player-plane, menus-title-plane-select, touch-controls]
+  - name: display_scale
+    expression: "n = min(We div 360, He div 640); f = min(We/360, He/640); Auto: n if n>=1 and limit_canvas*100 >= auto_fill_min_pct*limit_screen else f"
+    variables: [We, He, n, f, auto_fill_min_pct]
+    output: "real scale s > 0; INTEGER or FILL"
+    source: design/gdd/display-scaler-and-bezel.md (F2, F3)
+    referenced_by: [display-scaler-and-bezel, touch-controls]
+  - name: window_to_canvas
+    expression: "Off (u,v); CW (v, Ws-u); CCW (Hs-v, u); canvas = ((xe-x0)*360/dw, (ye-y0)*640/dh)"
+    variables: [u, v, Ws, Hs, x0, y0, dw, dh]
+    output: "canvas point; inside iff in [0,360)x[0,640)"
+    source: design/gdd/display-scaler-and-bezel.md (F7)
+    referenced_by: [display-scaler-and-bezel, touch-controls, menus-title-plane-select]
+  - name: team_pct_by_members
+    expression: "team_pct + team_pct_step * (m - 2) for m >= 2 members; 100 for m < 2 and for non-members"
+    variables: [team_pct, team_pct_step, m]
+    output: "100 / 120 / 130 / 140"
+    source: design/gdd/coop-and-team-chain.md (F1)
+    referenced_by: [coop-and-team-chain, scoring, hud]
+  - name: team_window_by_active
+    expression: "boss_hit_left = team_window + team_window_step * (a - 2), a = Active slots at the hit tick"
+    variables: [team_window, team_window_step, a]
+    output: "60 / 68 / 76 ticks"
+    source: design/gdd/coop-and-team-chain.md (F3)
+    referenced_by: [coop-and-team-chain, chain-tracker]
+  - name: coop_hp_scale
+    expression: "(base_hp * (100 + coop_hp_step * (N - 1)) + 50) / 100, integer division; MEDIUM, LARGE, PART, CORE only; read once at spawn"
+    variables: [base_hp, coop_hp_step, N]
+    output: "100 / 150 / 200 / 250 percent of base_hp (1,200 solo -> 3,000 at 4P)"
+    source: design/gdd/coop-and-team-chain.md (F4)
+    referenced_by: [coop-and-team-chain, enemy-and-ai]
+  - name: coop_spawn_scale
+    expression: "(base_size * (100 + coop_spawn_step * (N - 1)) + 99) / 100, integer division (rounds up); SMALL groups only"
+    variables: [base_size, coop_spawn_step, N]
+    output: "100 / 120 / 140 / 160 percent of base_size"
+    source: design/gdd/coop-and-team-chain.md (F5)
+    referenced_by: [coop-and-team-chain]
+  - name: enemy_spawn_hp
+    expression: "SMALL: hp_base; MEDIUM/LARGE: coop_hp_scale(hp_base, N), frozen at spawn"
+    variables: [hp_base, N]
+    inputs_owned_elsewhere: {coop_hp_step: "Co-op (18) - 50 (coop-and-team-chain F4)"}
+    output: "SMALL 20-60; MEDIUM 1,200-1,500 solo, x2.5 at 4P (1,200 -> 3,000); LARGE 4,000-5,000"
+    source: design/gdd/enemy-and-ai.md (F4)
+    referenced_by: [enemy-and-ai]
+  - name: enemy_path_position
+    expression: "pos(age) = origin + y_shift + mirror(path(age)); closed form of integer age; y_shift = play_top - 48"
+    variables: [age, origin, y_shift, path]
+    output: "position per tick; p_e(T), p_e(T+1) for Collision"
+    source: design/gdd/enemy-and-ai.md (F1, F10)
+    referenced_by: [enemy-and-ai, collision-damage-lives]
+  - name: board_id
+    expression: '"{stage_count}s/solo/{plane}" if played == 1 else "{stage_count}s/coop/{played}"'
+    variables: [stage_count, played, plane]
+    output: "string key; 5 boards in MVP, 7 in Target (12 across both)"
+    note: "Wave 4 (2026-11-03): plus one /touch solo board per plane (touch-controls.md TF8); RUSH/BOSS ids rush{n}/... and boss/{boss_id}/{plane} (online-leaderboards-boss-rush.md F5)"
+    source: design/gdd/save-settings-high-scores.md (F3)
+    referenced_by: [save-settings-high-scores, coop-and-team-chain, menus-title-plane-select, touch-controls, online-leaderboards-boss-rush]
+  - name: board_placement
+    expression: "rank_index = count(entries with score >= new_score); ranked = new_score >= min_ranked_score AND rank_index < board_size"
+    variables: [new_score, entries, board_size, min_ranked_score]
+    output: "rank 1..board_size or not ranked"
+    note: "Wave 5 batch 2 (2026-11-03): Save Rule 5 now states the `rank_index < board_size` half
+      explicitly (it previously tested only `min_ranked_score`), and `preview_rank` may return
+      `not placed`. A not-placed run asks for no initials and stores nothing; Menus Rule 35 shows
+      `menu.results.not_placed` (\"Not in top {n}\")."
+    source: design/gdd/save-settings-high-scores.md (F1, Rule 5)
+    referenced_by: [save-settings-high-scores, menus-title-plane-select, online-leaderboards-boss-rush]
+  - name: format_int
+    expression: "str(abs(n)) grouped in 3s from the right with ','; digits mapped to U+09E6+d when lang == bn; INDIAN grouping optional"
+    variables: [n, lang, digit_grouping]
+    output: "string of 1-11 chars (9 digits + 2 separators max at the display clamp)"
+    source: design/gdd/localization.md (F1)
+    referenced_by: [localization, scoring, stage-end-tally, hud, menus-title-plane-select]
+  - name: digit_cell_width
+    expression: "cell_w = ceil(0.6 * digit_height); sep_w = round(0.4 * cell_w)"
+    variables: [digit_height, cell_ratio, sep_ratio]
+    output: "10-15 px cell at defaults (S tier 17 px gives 11)"
+    source: design/gdd/localization.md (F3)
+    referenced_by: [localization, hud, menus-title-plane-select]
+  # --- Wave 2 (2026-11-03) ---
+  - name: laser_invuln_duty
+    expression: "(E + laser_exit_grace) / (E + R); E = ceil(meter / laser_burn); R = (meter_max - m0) / (fill_per_hit * eta_shot * 36 / 60)"
+    variables: [E, laser_exit_grace, R, fill_per_hit, eta_shot]
+    output: "0.15-0.23 at defaults; test limit 0.25"
+    source: design/gdd/plane-kits-lancer-leech.md (K5)
+    referenced_by: [plane-kits-lancer-leech, collision-damage-lives]
+  - name: drone_phase
+    expression: "phase_d = (d * interval) div 4"
+    variables: [d, interval]
+    output: "0..interval-1; distinct for 4 drones"
+    note: "Sentry turret phases (d x 7) div 4; Breaker ram (d x 6) div 4 (plane-kits-sentry-breaker.md)"
+    source: design/gdd/plane-kits-lancer-leech.md (K7)
+    referenced_by: [plane-kits-lancer-leech, plane-kits-sentry-breaker]
+  - name: boss_core_split
+    expression: "critical_hp = (core_hp * critical_pct + 50) / 100; core_main = core_hp - critical_hp (integer division)"
+    variables: [core_hp, critical_pct]
+    output: "critical_hp >= 1, core_main >= 1"
+    source: design/gdd/boss-and-boss-parts.md (F3)
+    referenced_by: [boss-and-boss-parts, coop-and-team-chain]
+  - name: boss_intensity
+    expression: "I = destroyed_noncore / total_noncore; I_enr = clamp((fight_ticks - enrage_start) / enrage_ramp, 0, 1); I_eff = max(I, I_enr)"
+    variables: [destroyed_noncore, total_noncore, fight_ticks, enrage_start, enrage_ramp]
+    output: "0-1, never decreasing"
+    source: design/gdd/boss-and-boss-parts.md (F4)
+    referenced_by: [boss-and-boss-parts, bullet-pattern-library]
+  - name: boss_fight_budget
+    expression: "T_fight = ceil(sum(part_hp)*6000/(ref_dps*ref_uptime_pct)) + ceil(core_main*6000/(ref_dps*ref_uptime_pct)); enrage_start = round100(enrage_mult * T_fight)"
+    variables: [part_hp, core_main, ref_dps, ref_uptime_pct, enrage_mult]
+    output: "T_fight 2400-3600 ticks (Fortress 2703, Jet 3285 at ref_dps 800)"
+    source: design/gdd/boss-and-boss-parts.md (F6)
+    referenced_by: [boss-and-boss-parts, online-leaderboards-boss-rush]
+  - name: cancel_item_sample
+    expression: "stride = ceil(n / cap); gem iff pool_index mod stride == 0; kept = ceil(n / stride)"
+    variables: [n, cap, stride]
+    output: "0..cap gems (1350 -> 97)"
+    source: design/gdd/powerups-and-drops.md (F3)
+    referenced_by: [powerups-and-drops, bullet-manager]
+  - name: pod_income
+    expression: "P_pod = 1 / (1 + q + ... + q^L), q = 1 - p"
+    variables: [p, L]
+    output: "SMALL 0.605, MEDIUM 0.571; 5.56 pods per stage at full kill"
+    source: design/gdd/powerups-and-drops.md (F2)
+    referenced_by: [powerups-and-drops]
+  - name: bomb_chain_toll
+    expression: "after = before - (before * toll_pct) div 100; skipped if before = 0, chain Frozen, or cb_armed"
+    variables: [before, toll_pct]
+    output: "1..999 when before >= 1 (never 0)"
+    source: design/gdd/bombs.md (B4)
+    referenced_by: [bombs, chain-tracker]
+  - name: lancer_bomb_effect_ticks
+    expression: "hold + ceil((max(x0, 360 - x0) + half_w) / v) - 1; defaults 24, 28, 8"
+    variables: [x0, hold, half_w, v]
+    output: "49-72 ticks"
+    source: design/gdd/bombs.md (B5)
+    referenced_by: [bombs]
+  - name: bomb_target_cap_rule
+    expression: "send only if sent[target] + base <= bomb_target_cap; part damage = (base * bomb_part_pct) div 100"
+    variables: [base, sent, bomb_target_cap, bomb_part_pct]
+    output: "0-1000 pre-multiplier per target per bomb"
+    source: design/gdd/bombs.md (B7)
+    referenced_by: [bombs, collision-damage-lives]
+  - name: power_score
+    expression: "Q = 3*N/50 + 2*max(S) + 2*max(L) + 2*max(A) + 2*max(B) + 1.5*max(M-1,0) + sum(R); S = v_eff/150; L = min(2, 14/lane_clear); R = 4*(100-armor_pct)/100"
+    variables: [N, S, L, A, B, M, R]
+    output: "2-8 per mechanic; 13-23 per MVP boss phase"
+    source: design/gdd/boss-power-budget.md (F3)
+    referenced_by: [boss-power-budget]
+  - name: preview_transform
+    expression: "count*pct_c, interval*pct_i (>= base), max(70, speed*pct_s); intensity 0, gates bypassed, arms 1, lock+12, start_delay >= 48"
+    variables: [pct_count, pct_interval, pct_speed]
+    output: "derived read-only pattern per preview wave"
+    source: design/gdd/boss-power-budget.md (F5)
+    referenced_by: [boss-power-budget]
+  # --- Wave 3a (2026-11-03) ---
+  - name: cb_armed
+    expression: "is_critical AND NOT consumed AND active(s) AND run_ok(s,t) AND hit_ok(s,t); run_ok: charge run >= cb_charge_min_ticks and (charging now or ended <= cb_charge_lenience ago); hit_ok: last charge hit target == core and age <= cb_hit_window"
+    variables: [cb_charge_min_ticks, cb_charge_lenience, cb_hit_window, run_len, last_active, hit_tick]
+    output: bool
+    source: design/gdd/critical-break.md (F1)
+    referenced_by: [critical-break, bombs, hud]
+  - name: cb_winner
+    expression: "argmin rank(s,T) over triggering slots; rank = (s - (T mod 4) + 4) mod 4"
+    variables: [s, T]
+    output: "one slot or none, once per boss"
+    source: design/gdd/critical-break.md (F2)
+    referenced_by: [critical-break, coop-and-team-chain]
+  - name: wave_timeline
+    expression: "end(w) = min(length(w), t_clear(w) + early_clear_gap); start(w+1) = start(w) + end(w) + gap(w)"
+    variables: [length, t_clear, early_clear_gap, gap]
+    output: "ticks; S1 starts 0/2100/4560/6960/9630, E5 12330"
+    source: design/gdd/wave-and-stage-director.md (F1)
+    referenced_by: [wave-and-stage-director]
+  - name: stage_par_ticks
+    expression: "lead_in + sum(length) + sum(gap) + 480 + T_fight_par + 180"
+    variables: [lead_in, length, gap, T_fight_par]
+    output: "S1 15813 (4:24), S2 16875 (4:41)"
+    source: design/gdd/wave-and-stage-director.md (F7)
+    referenced_by: [wave-and-stage-director]
+  - name: group_size
+    expression: "(count * min(100 + coop_spawn_step*(N-1), coop_spawn_cap) + 99) / 100"
+    variables: [count, coop_spawn_step, N, coop_spawn_cap]
+    output: "6 -> 6/8/9/10"
+    source: design/gdd/wave-and-stage-director.md (F2); restates coop-and-team-chain F5
+    referenced_by: [wave-and-stage-director, coop-and-team-chain]
+  - name: tally_schedule
+    expression: "info_start(i) = open_ticks + i*row_gap; t_score = open_ticks + n_info*row_gap; bonus_start(k) = t_score + bonus_lead + k*bonus_gap; settle = bonus_start(3) + countup_ticks"
+    variables: [open_ticks, row_gap, n_info, bonus_lead, bonus_gap, countup_ticks]
+    output: "settle tick 180-315 (competent 1P: 300)"
+    source: design/gdd/stage-end-tally.md (TF1)
+    referenced_by: [stage-end-tally]
+  - name: tally_countup
+    expression: "shown(k) = from + ((to - from) * k + W/2) / W, integer division, k = 0..W"
+    variables: [from, to, W, k]
+    output: "from at k=0, exactly to at k=W, never decreasing"
+    source: design/gdd/stage-end-tally.md (TF2)
+    referenced_by: [stage-end-tally]
+  - name: lobby_ready_gate
+    expression: "ready = joined >= 1 AND locked == joined; ready_ticks = ready ? prev + 1 : 0; commit when ready_ticks >= start_delay_ticks"
+    variables: [joined, locked, ready_ticks, start_delay_ticks]
+    output: "one commit per Lobby; 45 ticks after the last lock"
+    source: design/gdd/menus-title-plane-select.md (F2)
+    referenced_by: [menus-title-plane-select, game-events-and-session]
+  - name: name_wheel_step
+    expression: 'alphabet "A-Z0-9-." (38); idx'' = (idx + dir) mod 38; steps(a,b) = min((b-a) mod 38, (a-b) mod 38)'
+    variables: [idx, dir, a, b]
+    output: "steps 0-19; 19 steps by holding = 120 ticks"
+    source: design/gdd/menus-title-plane-select.md (F4)
+    referenced_by: [menus-title-plane-select, save-settings-high-scores]
+  - name: hold_confirm_progress
+    expression: "fires = held_ticks >= hold_confirm_ticks; segments = (4 * min(held_ticks, hold_confirm_ticks)) div hold_confirm_ticks"
+    variables: [held_ticks, hold_confirm_ticks]
+    output: "segments 0-4"
+    source: design/gdd/menus-title-plane-select.md (F6)
+    referenced_by: [menus-title-plane-select]
+  - name: plane_card_width
+    expression: "card_w = (360 - 2*card_margin - (P-1)*card_gap) div P"
+    variables: [P, card_margin, card_gap]
+    output: "160 / 104 / 76 px for 2 / 3 / 4 planes"
+    source: design/gdd/menus-title-plane-select.md (F7)
+    referenced_by: [menus-title-plane-select]
+  - name: score_roll
+    expression: "shown' = target if target - shown <= instant_max or target < shown else shown + ceil((target - shown) / roll_div)"
+    variables: [target, shown, score_roll_instant_max, score_roll_div]
+    output: "shown <= target, monotone; ~32 ticks for a 1,250,000 gap"
+    source: design/gdd/hud.md (HF1)
+    referenced_by: [hud]
+  - name: boss_bar_px
+    expression: "fill_px = (bar_permille * 310 + 999) div 1000; tick_px = phase_tick * 310 div 1000"
+    variables: [bar_permille, phase_tick, critical_notch]
+    output: "1-310 px"
+    source: design/gdd/hud.md (HF3)
+    referenced_by: [hud, boss-and-boss-parts]
+  # --- Wave 3b (2026-11-03) ---
+  - name: audio_volume_gain
+    expression: "step_db = linear_to_db(step / 10); step 0 = mute; bus_db = base_db + step_db + trim_db"
+    variables: [step, base_db, trim_db]
+    output: "-inf..0 dB"
+    source: design/gdd/save-settings-high-scores.md (F6); design/gdd/audio.md (F1)
+    referenced_by: [save-settings-high-scores, audio]
+  - name: audio_rate_gate
+    expression: "allowed = count(plays of (id, key) in ticks (t - W, t]) < N"
+    variables: [t, W, N, key]
+    output: bool
+    source: design/gdd/audio.md (F2)
+    referenced_by: [bullet-manager, audio]
+  - name: cancel_puff_sample
+    expression: "stride = ceil(n / cap_puff); puff iff i mod stride == 0; kept = ceil(n / stride)"
+    variables: [n, cap_puff, stride]
+    output: "0..cap_puff (1350 -> 40 at cap 40, 12 at cap 12)"
+    source: design/gdd/vfx-and-screen-feedback.md (F3)
+    referenced_by: [vfx-and-screen-feedback, bullet-manager, powerups-and-drops]
+  - name: fx_evict_victim
+    expression: "oldest instance of the highest tier number > request tier t; else (t <= 1) oldest of tier t; else drop"
+    variables: [t, tier_j, start_tick]
+    output: "pool index or none"
+    source: design/gdd/vfx-and-screen-feedback.md (F6)
+    referenced_by: [vfx-and-screen-feedback]
+  - name: fx_ring_diameter
+    expression: "diam(t) = d0 + ((d1 - d0) * t) div T"
+    variables: [d0, d1, T, t]
+    output: "bomb 36->480/12; CB 24->360/18; death 40->80/18"
+    source: design/gdd/vfx-and-screen-feedback.md (F7)
+    referenced_by: [vfx-and-screen-feedback, bombs, critical-break, collision-damage-lives]
+  - name: era_release_tick
+    expression: "clamp(max(plan_end, env_ready_tick), 0, era_hold_max); plan_end full = reveal_start + old_hold + swap_ticks + new_hold = 201"
+    variables: [reveal_start, old_hold, swap_ticks, new_hold, env_ready_tick, era_hold_max]
+    output: "96-240 ticks"
+    source: design/gdd/era-shift-and-plane-evolution.md (F1)
+    referenced_by: [era-shift-and-plane-evolution, stage-end-tally]
+  - name: strip_speed
+    expression: "Accelerate: clamp(round((speed + v_cap) / 2), v_min, v_cap_global) [V_EFF]; Curve: speed; Warp: warp_speed"
+    variables: [speed, v_cap, warp_speed, v_min, v_cap_global]
+    output: "70-480 px/s"
+    source: design/gdd/era-shift-and-plane-evolution.md (F4)
+    referenced_by: [era-shift-and-plane-evolution, wave-and-stage-director, enemy-and-ai]
+  - name: ground_anchor_dy
+    expression: "(S_now div 100) - (S_spawn div 100)"
+    variables: [S_now, S_spawn]
+    output: "int px; equals the L3 offset change since spawn"
+    source: design/gdd/parallax-and-environment.md (F4)
+    referenced_by: [parallax-and-environment, enemy-and-ai, vfx-and-screen-feedback]
+  - name: layer_draw_offset
+    expression: "A_L += (v_eff * f_L * k_L) div 100 (mod loop*10000); draw = A_L div 10000"
+    variables: [v_eff, f_L, k_L, loop_L]
+    output: "int px; L3 draw = S div 100"
+    source: design/gdd/parallax-and-environment.md (F2)
+    referenced_by: [parallax-and-environment]
+  - name: assist_tick_gate
+    expression: "acc1 = acc + speed_pct; run = acc1 >= 100; acc_next = acc1 - 100 if run else acc1"
+    variables: [acc, speed_pct]
+    output: "exactly speed_pct game ticks per 100 physics steps"
+    source: design/gdd/accessibility-options.md (F2)
+    referenced_by: [accessibility-options, game-events-and-session]
+  - name: ally_shot_opacity
+    expression: "max(25, (base(N) * (100 - dim) + 50) div 100); base 100/75/50"
+    variables: [base, dim, N]
+    output: "25-100"
+    source: design/gdd/accessibility-options.md (F3)
+    referenced_by: [accessibility-options, bullet-manager]
+  - name: palette_acceptance
+    expression: "luma gap >= 25 AND dE76 >= 20 under protan/deutan/tritan (Machado 2009, severity 1.0) AND dE >= 20 vs each bullet fill"
+    variables: [luma, dE, M]
+    output: "pass/fail"
+    source: design/gdd/accessibility-options.md (F5)
+    referenced_by: [accessibility-options]
+  # --- Wave 4 (2026-11-03) ---
+  - name: hint_count_pack
+    expression: "count(h) = (hint_counts >> 2h) & 3; show: hint_counts + (1 << 2h)"
+    output: "0-3 per hint, 12 used of 24 possible"
+    source: design/gdd/tutorial.md (F4)
+    referenced_by: [tutorial]
+  - name: chain_drop_streak
+    expression: "EXPIRED drop: value >= chain_ok ? 0 : streak + 1; fire at 3; other reasons ignored"
+    source: design/gdd/tutorial.md (F2)
+    referenced_by: [tutorial]
+  - name: touch_drag_delta
+    expression: "drag = round_half_away(window_motion * (360/dw) * sens * 16), jitter-filtered by drag_min_mm"
+    variables: [window_motion, dw, sens, drag_min_mm]
+    output: "Vector2i, 1/16 canvas px"
+    source: design/gdd/touch-controls.md (TF3)
+    referenced_by: [touch-controls, player-plane, input-and-player-mapping]
+  - name: touch_leash_step
+    expression: "pending' = clamp_len(pending + drag, leash*16); step = clamp_len(pending', v*16/60); pending = pending' - step; blocked axis -> 0"
+    variables: [pending, drag, leash_px, v]
+    output: "|step| <= 56 units at move_speed"
+    source: design/gdd/touch-controls.md (TF4)
+    referenced_by: [touch-controls, player-plane]
+  - name: touch_strip_px
+    expression: "s_btn = clamp((W_mm-20)/41, 0.82, s_user); strip_px = round((3 + 12*s_btn) * ppmm)"
+    variables: [W_mm, s_user, ppmm]
+    output: "int px (e.g. 270 on 1125x2436 at 458 dpi)"
+    source: design/gdd/touch-controls.md (TF2)
+    referenced_by: [touch-controls, display-scaler-and-bezel]
+  - name: min_touch_target_canvas_px
+    expression: "ceil(9 * ppmm / s)"
+    variables: [ppmm, s]
+    output: "55 at x3 / 458 dpi"
+    source: design/gdd/touch-controls.md (TF7)
+    referenced_by: [touch-controls, menus-title-plane-select]
+  - name: online_board_key
+    expression: '"r" + ruleset + "/" + local_board_id; local ids: "{n}s/solo|coop/...", "rush{n}/solo|coop/...", "boss/{boss_id}/{plane}"'
+    variables: [ruleset, local_board_id]
+    output: "string key"
+    source: design/gdd/online-leaderboards-boss-rush.md (F5)
+    referenced_by: [online-leaderboards-boss-rush, save-settings-high-scores]
+  - name: online_plausibility_bound
+    expression: "slot_bound = stage_units * slot_stage_bound; claim_bound = sum over played slots; boss_min_ticks = boss_intro_ticks + floor(T_fight * min_fight_pct / 100)"
+    variables: [stage_units, slot_stage_bound, boss_intro_ticks, T_fight, min_fight_pct]
+    output: "31,000,000-496,000,000; boss_min_ticks 915 (Fortress), 1061 (Jet Carrier)"
+    source: design/gdd/online-leaderboards-boss-rush.md (F1, F2)
+    referenced_by: [online-leaderboards-boss-rush]
