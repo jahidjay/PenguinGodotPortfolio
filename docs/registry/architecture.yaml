@@ -1,0 +1,266 @@
+# Architecture registry. Stances here are locked: a new ADR that needs a
+# different stance must supersede the old entry (status: superseded_by), never edit it.
+# Created 2026-11-02 from ADR-0001. Updated 2026-11-03 with ADR-0002..0009.
+
+state_ownership:
+  - name: bullet_pools
+    owner: BulletField (Bullet manager, system 3)
+    note: "Enemy pool 2000, player pool 600; packed arrays; nobody else stores bullets"
+    source: ADR-0001
+    status: active
+  - name: invulnerability_and_hit_results
+    owner: CollisionReferee (Collision, system 6)
+    source: ADR-0001
+    status: active
+  - name: gameplay_tick_counter
+    owner: GameLoop (Node, _physics_process at 60 Hz)
+    source: ADR-0001
+    status: active
+
+  - name: simulation_state
+    owner: SimWorld (RefCounted; owns and ticks every sim system, steps 1-8)
+    note: "GameLoop is the driver (admission gates + step 9 presentation); tests and the verifier drive SimWorld directly"
+    source: ADR-0002
+    status: active
+  - name: tick_event_log
+    owner: SimWorld (preallocated per-tick event log, this tick + previous)
+    source: ADR-0002
+    status: active
+  - name: pause_state
+    owner: GameSession (is_paused; GameLoop gates on it; SceneTree.paused only freezes presentation)
+    source: ADR-0002
+    status: active
+  - name: input_buffers_and_edges
+    owner: SimInputDecoder (sim side, step 1; Drone/Bomb buffer, consume, clear_buffer, edges, held_ticks)
+    source: ADR-0003
+    status: active
+  - name: run_seed_and_rng_streams
+    owner: GameSession (run_seed); each stream owned by the system in the ADR-0003 stream table
+    source: ADR-0003
+    status: active
+  - name: run_flow_scenes
+    owner: SceneHost / RunFlow (scenes); GameSession keeps run state
+    source: ADR-0004
+    status: active
+  - name: game_speed_accumulator
+    owner: SpeedGate (GameLoop admission gate 3)
+    source: ADR-0005
+    status: active
+  - name: run_assisted_latch
+    owner: GameSession (set at step 1a)
+    source: ADR-0005
+    status: active
+  - name: cb_flash_render_state
+    owner: FlashState (tick) + FlashPresenter (render)
+    source: ADR-0006
+    status: active
+  - name: online_identity_and_queue
+    owner: OnlineService via LeaderboardAdapter
+    source: ADR-0007
+    status: active
+  - name: touch_finger_state
+    owner: TouchLatch / TouchMapper (Input sampler, slot 0)
+    source: ADR-0008
+    status: active
+
+interfaces:
+  - name: bullet_field_api
+    contract: "request_spawn(spec) -> int accepted; request_cancel(area, cause_slot); request_clear_enemy_pool(); set_targets(slots); set_hurtboxes(list); tick(); outputs read after tick (player_hits, enemy_hits, cancel_items, counters, state_hash)"
+    note: "Exact signatures owned by BM GDD acceptance-criteria test setup"
+    source: ADR-0001
+    status: active
+  - name: bullet_renderer_sync
+    contract: "BulletRenderer.sync_from(field: BulletField) — one MultiMesh.buffer assignment per pool per render frame"
+    source: ADR-0001
+    status: active
+  - name: game_loop_tick_order
+    contract: "1 input > 2 PlaneCore.tick > 3 kit/bomb requests > 4 emitter spawn requests > 5 BulletField.tick > 6 CollisionReferee.tick > 7 enemy-pool clear > 8 chain/score/session consume events > 9 GameEvents signals to presentation"
+    source: ADR-0001
+    status: superseded_by
+    superseded_by: ADR-0002
+
+  - name: game_loop_tick_order_v2
+    contract: "0 InputSampler.service_step + MenuHost (every physics step, ALWAYS) + gates pause > load-discard > speed | 1 commit_sim_tick, 1a Session.begin_tick, 1b ReplayRecorder, 2 PlaneCore, 3 kits then bombs, 3a StageDirector/DrillRunner then ScrollClock, 3b EnemyManager.tick, 3c BossController.tick, 4 pattern runners, 5 CollisionReferee.begin_pass + BulletField.tick, 6 CollisionReferee.tick, 6a EnemyManager.apply_results, 6b CriticalBreakCore.tick, 6c BossController.apply_results, 7 enemy-pool clear, 7b Powerups, 8a Chain, 8b Scoring, 8c Coop, 8d Session, 8e StageTally, 8f EraShift (+checkpoint) | 9 GameEvents flush, Drill/Hint, HudModel, VFX, ParallaxState, Audio policy"
+    source: ADR-0002
+    status: active
+  - name: event_delivery_rule
+    contract: "Consumer step after producer step -> same tick; at or before -> next tick. Requests are applied at the receiver's step by the same rule. Sim systems never connect to GameEvents; the bus is emitted only at step 9."
+    source: ADR-0002
+    status: active
+  - name: sim_input
+    contract: "Per slot per game tick: byte (bits 0-3 move 0..8, 4 fire, 5 drone, 6 bomb held, 7 fire pulse); touch slots add drag Vector2i (int16, 1/16 px), drag_active, fire_auto. The only input crossing into SimWorld."
+    source: ADR-0003
+    status: active
+  - name: replay_format
+    contract: "Header (versions, ruleset, content_hash, platform_class, mode, stages, run_seed, slots, timing settings) + run-length SimInput records + touch extension records + run events (join, continue_accept, slot_forfeit, era_released) + state_hash every 600 ticks + footer; ZSTD"
+    source: ADR-0003
+    status: active
+  - name: scene_host
+    contract: "SceneHost.show_screen(id); request_start(selections, mode, stage_list) pre-loads, then calls GameSession.start_run, else start_failed (Lobby re-opens Locked)"
+    source: ADR-0004
+    status: active
+  - name: discard_backlog
+    contract: "GameLoop.discard_backlog() after any synchronous load/instantiate in a run: at most 1 game tick per render frame for the current + discard_frames (2) frames; dropped steps keep input latches and do not feed the speed accumulator"
+    source: ADR-0004
+    status: active
+  - name: staged_loader
+    contract: "StagedLoader request/poll/load_now; Threaded or Sliced (Web, only under cover) backend; verifier backend ready at the recorded tick"
+    source: ADR-0004
+    status: active
+  - name: speed_gate
+    contract: "SpeedGate.step(): acc += speed_pct; tick iff acc >= 100 (then acc -= 100); reset on change, pause, run_started"
+    source: ADR-0005
+    status: active
+  - name: leaderboard_adapter
+    contract: "identity/friends/fetch/fetch_around/submit/status/delete_my_data -> request_id; poll() once per rendered frame, never from GameLoop"
+    source: ADR-0007
+    status: active
+  - name: display_touch_strip
+    contract: "DisplayLayout.compute(..., touch_strip_px) -> touch_strip_rect, latched while Playing"
+    source: ADR-0008
+    status: active
+  - name: slot_input_touch_fields
+    contract: "SlotInput.drag Vector2i 1/16 px, drag_active, fire_auto; the replay must record them"
+    source: ADR-0008
+    status: active
+
+performance_budgets:
+  - system: bullet-manager
+    budget: "tick <= 1.5 ms p99 on REF-WEB to accept ADR-0001; hard limit 2.5 ms; hit tests <= 1.5 ms"
+    source: ADR-0001, bullet-manager.md F12
+    status: active
+  - system: collision-damage-lives
+    budget: "<= 0.5 ms p99 per tick"
+    source: ADR-0001, collision-damage-lives.md AC-53
+    status: active
+  - system: bullet-renderer
+    budget: "MultiMesh buffer pack <= 1.0 ms p99 per render frame"
+    source: ADR-0001
+    status: active
+
+  - system: whole-simulation tick
+    budget: "Sum of steps 1-9 <= 4.5 ms p99 per game tick on REF-WEB (paper sum 4.1 ms at BM 1.5 ms); render-side scripted <= 3.6 ms per frame; PlaneCore x4 0.05 ms and Session 0.02 ms proposed"
+    source: ADR-0002
+    status: active
+  - system: replay
+    budget: "ReplayRecorder <= 20 us median; checkpoint state_hash <= 2 ms on REF-WEB every 600 ticks"
+    source: ADR-0003
+    status: active
+  - system: speed-gate
+    budget: "SpeedGate.step() < 2 us on REF-WEB"
+    source: ADR-0005, accessibility-options.md AC-48
+    status: active
+  - system: localization
+    budget: "format_int <= 20 us on REF-WEB; no first-time shaping during a stage"
+    source: ADR-0009
+    status: active
+
+api_decisions:
+  - name: language
+    decision: "GDScript only (static typing). No C#. C++ GDExtension only as a bullet-kernel fallback via a new ADR."
+    source: ADR-0001
+    status: superseded_by
+    superseded_by: ADR-0007
+  - name: bullet_rendering
+    decision: "One MultiMeshInstance2D per pool, TRANSFORM_2D + colors + custom data, instance_count fixed, visible_instance_count per frame, whole buffer in one call, rotation/atlas frame via INSTANCE_CUSTOM shader"
+    source: ADR-0001
+    status: active
+  - name: fixed_tick
+    decision: "_physics_process at physics_ticks_per_second = 60, integer tick counter, tick guard, no render interpolation, tree pause stops ticks"
+    source: ADR-0001
+    status: superseded_by
+    superseded_by: ADR-0002
+  - name: reference_machines
+    decision: "REF-PC (4 cores ~3 GHz, iGPU, 8 GB), REF-WEB (same + latest Chrome, release single-thread Web export), REF-PHONE (Galaxy S20-class Android)"
+    source: ADR-0001
+    status: active
+
+  - name: language_v2
+    decision: "GDScript only (static typing). No C#. C++ GDExtension only as a bullet-kernel fallback via a new ADR. GodotSteam GDExtension exception: Steam Win/Linux presets, identity/ticket/friends only (ADR-0007)."
+    source: ADR-0001, ADR-0007
+    status: active
+  - name: fixed_tick_v2
+    decision: "60 Hz _physics_process; GameLoop PROCESS_MODE_ALWAYS with explicit admission gates (pause, load discard, speed); integer game_tick; tick guard logs ticks over 8 ms; no render interpolation; SceneTree.paused only freezes presentation"
+    source: ADR-0002
+    status: active
+  - name: sim_float_policy
+    decision: "Sim allows int ops and float + - * / sqrt abs min max floor ceil round; trig via SimMath table in binary angle units; closed-form positions quantised to 1/16 px; engine compound math only if the V1 torture test shows it identical"
+    source: ADR-0003
+    status: active
+  - name: rng_streams
+    decision: "No shared order-dependent RNG; keyed streams seeded by SimHash.seed (SHA-256): emitter (run_seed, stage, owner_id, emitter_index), drops (run_seed, stage, drops); new streams need an ADR amendment"
+    source: ADR-0003
+    status: active
+  - name: replay_verification
+    decision: "Headless ruleset build re-simulates; platform classes x64-desktop / wasm / arm64 verified only after the cross-platform spike; fallback same-class verifier or UNVERIFIED tab; touch runs recorded and verifiable"
+    source: ADR-0003
+    status: active
+  - name: display_pipeline
+    decision: "Root stretch disabled; 360x640 SubViewport (UPDATE_ALWAYS, nearest, 2D snap) shown by DisplayPresenter with the sharp-bilinear shader; pointer forwarded via push_input; fallback built-in viewport stretch, integer"
+    source: ADR-0004
+    status: active
+  - name: scene_management
+    decision: "Custom SceneHost inside the SubViewport (RunLayer PAUSABLE, MenuLayer/OverlayLayer ALWAYS); no change_scene_to_*; MenuHost ticks menu models every physics step"
+    source: ADR-0004
+    status: active
+  - name: game_speed_assist
+    decision: "Integer tick-skip accumulator after the pause and discard gates; Engine.time_scale untouched; music real time; run.assisted latch; assisted runs never upload"
+    source: ADR-0005
+    status: active
+  - name: single_frame_flash
+    decision: "Render-side one-shot counter; show in _process, hide on frame_post_draw with frames_drawn fallback; SubViewport UPDATE_ALWAYS"
+    source: ADR-0006
+    status: active
+  - name: online_hosting
+    decision: "Custom verifier authoritative; one EU region; HTTPS + bearer install token; CORS allow-list; consent basis"
+    source: ADR-0007
+    status: active
+  - name: touch_mouse_emulation
+    decision: "emulate_mouse_from_touch = false; TouchRouter single pointer stream in menus"
+    source: ADR-0008
+    status: active
+  - name: text_shaping
+    decision: "TextServerAdvanced incl. Web (gate S1); digit atlas; pixel-grid OTF + outline; Plan B pre-shaped runs, Plan C custom template"
+    source: ADR-0009
+    status: active
+
+forbidden_patterns:
+  - name: per_bullet_nodes_or_draw
+    rule: "No per-bullet Nodes; no _draw()/draw_circle for bullets"
+    source: ADR-0001
+  - name: per_bullet_calls_in_hot_loops
+    rule: "No function calls, Callables, signals or match per bullet in hot loops"
+    source: ADR-0001
+  - name: rules_inside_nodes
+    rule: "Gameplay rules live in node-free RefCounted classes with tick(); Nodes are thin adapters"
+    source: ADR-0001
+  - name: direct_cross_system_state_write
+    rule: "Use the other system's request methods or signals"
+    source: ADR-0001
+  - name: magic_tuning_numbers
+    rule: "Tuning values live in .tres under data/"
+    source: ADR-0001
+  - name: global_random
+    rule: "No global randf()/randi() in gameplay; use the seeded RandomNumberGenerator passed in"
+    source: ADR-0001
+  - name: delta_in_gameplay_logic
+    rule: "Use the integer tick counter; no delta in gameplay logic"
+    source: ADR-0001
+  - name: sim_transcendentals_and_global_hash
+    rule: "No sin/cos/tan/atan2/exp/log/pow, Vector2.angle/rotated/from_angle, randfn or Variant hash() inside SimWorld systems; use SimMath / SimHash"
+    source: ADR-0003
+  - name: sim_nondeterministic_sources
+    rule: "No Time/OS/Engine frame counters, get_tree(), threads, await, path loads or instance-id ordering inside tick(); comparators are total orders"
+    source: ADR-0003
+  - name: sim_listens_to_bus
+    rule: "Simulation systems never connect to GameEvents; they read the SimWorld tick event log"
+    source: ADR-0002
+  - name: change_scene_to
+    rule: "No change_scene_to_file / change_scene_to_packed; use SceneHost"
+    source: ADR-0004
+  - name: time_scale_for_speed
+    rule: "Never change Engine.time_scale or physics_ticks_per_second at runtime; game speed is the SpeedGate"
+    source: ADR-0005
+  - name: catch_up_after_blocking_load
+    rule: "Every synchronous load/instantiate during a run calls GameLoop.discard_backlog()"
+    source: ADR-0004
