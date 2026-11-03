@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="ScoringRules" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/gameplay/scoring/scoring_rules.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+hit_base = 10
+team_pct = 120
+team_pct_step = 10
+kill_value_small = 200
+kill_value_medium = 1000
+kill_value_large = 5000
+part_value = 5000
+boss_value = 100000
+gem_base = 100
+medal_base = 1000
+factor_cap_count = 500
+factor_step = 50
+cb_unit = 1000
+ldb_per_life = 50000
+clear_bonus = 100000
+no_death_bonus = 200000
+life_value = 50000
+peak_value = 1300
+hold_unit = 500
+hold_ramp_s = 30
+extend_unit = 3000000
+display_cap = 999999999
+slot_stage_bound = 31000000
