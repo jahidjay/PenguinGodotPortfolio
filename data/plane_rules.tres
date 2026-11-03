@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="PlaneRules" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/gameplay/player/plane_rules.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+move_speed = 210.0
+focus_speed = 105.0
+hud_strip_1p = 48.0
+hud_strip_coop = 72.0
+top_padding = 4.0
+edge_margin = 8.0
+bottom_margin = 12.0
+hitbox_radius = 3.0
+fly_in_ticks = 36
+death_hold_ticks = 36
+respawn_invuln_ticks = 120
+fly_in_from_below = 48.0
+start_from_bottom = 70.0
+starting_lives = 3
