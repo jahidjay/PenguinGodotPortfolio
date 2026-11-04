@@ -1,0 +1,33 @@
+[gd_resource type="Resource" script_class="BombRules" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/gameplay/bombs/bomb_rules.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+bomb_start = 3
+stage_floor = 3
+bomb_max = 5
+invuln_ticks = 90
+lockout_ticks = 90
+chain_toll_pct = 50
+hold_ticks = 24
+sweep_half_w = 28.0
+sweep_speed = 8.0
+lancer_damage = 100
+damage_interval = 4
+per_target_cap = 1000
+hook_count = 4
+hook_speed = 16.0
+cling_ticks = 18
+hook_damage = 250
+burst_radius = 48.0
+bastion_r0 = 40.0
+bastion_grow = 4.0
+bastion_r_max = 104.0
+bastion_ticks = 72
+bastion_interval = 6
+bastion_damage = 60
+bastion_rise = 56.0
+backlash_half_h = 12.0
+backlash_speed = 12.0
+backlash_damage = 500
