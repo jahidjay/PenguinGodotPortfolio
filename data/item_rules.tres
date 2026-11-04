@@ -1,0 +1,40 @@
+[gd_resource type="Resource" script_class="ItemRules" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/gameplay/items/item_rules.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+small_pod_pct = 55
+small_chain_pct = 25
+medium_pod_pct = 50
+medium_chain_pct = 20
+pity_limit = 2
+max_drones = 4
+max_lives = 6
+chain_pickup_amount = 10
+oneup_carrier_nth = 4
+oneup_second_nth = 9
+items_per_cancel_cap = 100
+gem_cap = 300
+drop_cap = 24
+pop_v0 = 1.0
+pop_ticks = 18
+drop_fall = 0.8
+rest_y = 616.0
+drop_lifetime = 600
+oneup_lifetime = 900
+pulse_ticks = 120
+bob_amp = 6.0
+bob_period = 90
+drop_inset = 10.0
+row_spacing = 7.0
+magnet_radius = 36.0
+magnet_speed = 5.0
+gem_hold = 6
+gem_v0 = 3.0
+gem_accel = 0.25
+gem_vmax = 10.0
+gem_lifetime = 300
+sweep_speed = 10.0
+pickup_radius = 14.0
+item_radius = Array[float]([8.0, 7.0, 7.0, 8.0, 4.0])

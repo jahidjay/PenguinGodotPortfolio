@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="CriticalBreakRules" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/gameplay/critical/critical_break_rules.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+charge_min_ticks = 12
+charge_lenience = 12
+hit_window = 12
+critical_hp_pct = 25
+critical_ticks = 420
