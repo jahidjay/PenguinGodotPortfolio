@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="PatternDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/gameplay/patterns/pattern_def.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"jet_wing_wall"
+kind = 3
+start_delay = 48
+interval = 138
+count = 7
+speed = 110.0
+spacing = 16.0
+gap_width = 1
+edge_slots = 1

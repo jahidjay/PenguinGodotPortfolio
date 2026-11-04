@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="PatternDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/gameplay/patterns/pattern_def.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"plasma_core_exposed_fan"
+kind = 0
+start_delay = 36
+interval = 72
+min_intensity = 1.0
+count = 5
+speed = 180.0
+spread_rad = 0.1875

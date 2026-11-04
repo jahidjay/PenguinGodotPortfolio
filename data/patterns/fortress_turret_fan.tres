@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="PatternDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/gameplay/patterns/pattern_def.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"fortress_turret_fan"
+kind = 0
+start_delay = 48
+interval = 66
+count = 3
+speed = 170.0
+spread_rad = 0.21

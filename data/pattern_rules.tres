@@ -1,0 +1,28 @@
+[gd_resource type="Resource" script_class="PatternRules" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/gameplay/patterns/pattern_rules.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+spawn_safe_radius = 42.0
+react_ticks = 9
+lane_min_clear = 14.0
+d_ref = 160.0
+lane_measure_distance = 120.0
+wall_corridor_warn = 20.0
+wall_edge_margin = 8.0
+validator_react_ticks = 18
+wall_speed_max = 205.0
+player_hitbox_radius = 3.0
+player_speed_per_tick = 3.5
+runner_density_warn = 450.0
+scene_density_budget = 1700.0
+path_length_crossing = 640.0
+path_length_radial = 320.0
+warp_effective_speed = 66.0
+flak_clamp_inset = 12.0
+flak_fuse_max = 8
+play_top_solo = 48.0
+play_top_coop = 72.0
+canvas_width = 360.0
+canvas_height = 640.0

@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="PatternDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/gameplay/patterns/pattern_def.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"fortress_core_spiral"
+kind = 2
+start_delay = 30
+interval = 7
+interval_at_full = 3
+speed = 140.0
+arms = 2
+step_rad = 0.33
+angle_offset_rad = 0.0

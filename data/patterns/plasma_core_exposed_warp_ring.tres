@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PatternDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/gameplay/patterns/pattern_def.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"plasma_core_exposed_warp_ring"
+kind = 1
+start_delay = 1
+interval = 72
+min_intensity = 1.0
+count = 20
+speed = 130.0
+shape = 0
+behaviour = 3
+offset_mode = 1

@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PatternDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/gameplay/patterns/pattern_def.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"wave_1941_spray"
+kind = 6
+start_delay = 48
+interval = 90
+count = 4
+speed = 150.0
+arc_rad = 1.2
+jitter = 0.5
+speed_min = 120.0
+speed_max = 180.0

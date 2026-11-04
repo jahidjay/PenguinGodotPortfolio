@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="PatternDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/gameplay/patterns/pattern_def.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"wave_1941_flak"
+kind = 5
+start_delay = 48
+interval = 150
+count = 12
+speed = 120.0
+offset_mode = 1
+flak_distance = 240.0
+standoff = 56.0
+flak_delay = 36

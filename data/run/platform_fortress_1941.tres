@@ -1,0 +1,42 @@
+[gd_resource type="Resource" script_class="PlatformDef" load_steps=12 format=3]
+
+[ext_resource type="Script" path="res://src/gameplay/run/platform_def.gd" id="1"]
+[ext_resource type="Script" path="res://src/gameplay/run/platform_gun.gd" id="2"]
+[ext_resource type="Script" path="res://src/gameplay/patterns/pattern_def.gd" id="3"]
+[ext_resource type="Resource" path="res://data/patterns/fortress_core_spiral.tres" id="p_fortress_core_spiral"]
+[ext_resource type="Resource" path="res://data/patterns/fortress_core_rage_ring.tres" id="p_fortress_core_rage_ring"]
+[ext_resource type="Resource" path="res://data/patterns/fortress_turret_fan.tres" id="p_fortress_turret_fan"]
+[ext_resource type="Resource" path="res://data/patterns/fortress_engine_ring.tres" id="p_fortress_engine_ring"]
+
+[sub_resource type="Resource" id="gun_0"]
+script = ExtResource("2")
+offset = Vector2(0.0, -6.0)
+patterns = Array[ExtResource("3")]([ExtResource("p_fortress_core_spiral"), ExtResource("p_fortress_core_rage_ring")])
+
+[sub_resource type="Resource" id="gun_1"]
+script = ExtResource("2")
+offset = Vector2(-71.0, 12.0)
+patterns = Array[ExtResource("3")]([ExtResource("p_fortress_turret_fan")])
+
+[sub_resource type="Resource" id="gun_2"]
+script = ExtResource("2")
+offset = Vector2(71.0, 12.0)
+patterns = Array[ExtResource("3")]([ExtResource("p_fortress_turret_fan")])
+
+[sub_resource type="Resource" id="gun_3"]
+script = ExtResource("2")
+offset = Vector2(-39.0, 22.0)
+patterns = Array[ExtResource("3")]([ExtResource("p_fortress_engine_ring")])
+
+[sub_resource type="Resource" id="gun_4"]
+script = ExtResource("2")
+offset = Vector2(39.0, 22.0)
+patterns = Array[ExtResource("3")]([ExtResource("p_fortress_engine_ring")])
+
+[resource]
+script = ExtResource("1")
+anchor = Vector2(180.0, 110.0)
+sway_x = 96.0
+sway_period = 420
+ramp_ticks = 1500
+guns = Array[ExtResource("2")]([SubResource("gun_0"), SubResource("gun_1"), SubResource("gun_2"), SubResource("gun_3"), SubResource("gun_4")])

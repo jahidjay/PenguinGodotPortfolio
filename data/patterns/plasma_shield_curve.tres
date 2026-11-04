@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="PatternDef" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/gameplay/patterns/pattern_def.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"plasma_shield_curve"
+kind = 4
+start_delay = 48
+interval = 10
+count = 1
+speed = 120.0
+behaviour = 2
+spin = 1.3

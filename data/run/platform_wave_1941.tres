@@ -1,0 +1,32 @@
+[gd_resource type="Resource" script_class="PlatformDef" load_steps=10 format=3]
+
+[ext_resource type="Script" path="res://src/gameplay/run/platform_def.gd" id="1"]
+[ext_resource type="Script" path="res://src/gameplay/run/platform_gun.gd" id="2"]
+[ext_resource type="Script" path="res://src/gameplay/patterns/pattern_def.gd" id="3"]
+[ext_resource type="Resource" path="res://data/patterns/wave_1941_aimed_fan.tres" id="p_wave_1941_aimed_fan"]
+[ext_resource type="Resource" path="res://data/patterns/wave_1941_wall.tres" id="p_wave_1941_wall"]
+[ext_resource type="Resource" path="res://data/patterns/wave_1941_flak.tres" id="p_wave_1941_flak"]
+[ext_resource type="Resource" path="res://data/patterns/wave_1941_spray.tres" id="p_wave_1941_spray"]
+
+[sub_resource type="Resource" id="gun_0"]
+script = ExtResource("2")
+offset = Vector2(-60.0, 0.0)
+patterns = Array[ExtResource("3")]([ExtResource("p_wave_1941_aimed_fan")])
+
+[sub_resource type="Resource" id="gun_1"]
+script = ExtResource("2")
+offset = Vector2(60.0, 0.0)
+patterns = Array[ExtResource("3")]([ExtResource("p_wave_1941_wall")])
+
+[sub_resource type="Resource" id="gun_2"]
+script = ExtResource("2")
+offset = Vector2(0.0, 18.0)
+patterns = Array[ExtResource("3")]([ExtResource("p_wave_1941_flak"), ExtResource("p_wave_1941_spray")])
+
+[resource]
+script = ExtResource("1")
+anchor = Vector2(180.0, 90.0)
+sway_x = 120.0
+sway_period = 600
+ramp_ticks = 900
+guns = Array[ExtResource("2")]([SubResource("gun_0"), SubResource("gun_1"), SubResource("gun_2")])
