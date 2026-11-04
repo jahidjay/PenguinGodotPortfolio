@@ -1,0 +1,14 @@
+GIMP Palette
+Name: pal_2100
+Columns: 8
+#
+# MorutJan - 2100+ plasma - no ground, drifting shards of the three eras
+# Source of truth: design/art/art-bible.md section 4. Edit there first.
+#
+128 112 140	#80708C Sky
+ 74  58  86	#4A3A56 Far
+125 106 138	#7D6A8A Mid
+135 124 145	#877C91 Ground - pulse peak
+168  52 143	#A8348F Accent
+ 42  32  54	#2A2036 Shadow / enemy body
+ 11   6  20	#0B0614 Enemy outline

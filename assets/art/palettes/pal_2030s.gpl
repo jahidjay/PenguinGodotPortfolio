@@ -1,0 +1,17 @@
+GIMP Palette
+Name: pal_2030s
+Columns: 8
+#
+# MorutJan - 2030s neon night - lit canal, megacity grid, rain
+# Source of truth: design/art/art-bible.md section 4. Edit there first.
+#
+ 15  26  46	#0F1A2E Sky
+ 22  48  74	#16304A Far
+ 31  70  96	#1F4660 Mid
+ 10  18  32	#0A1220 Ground
+ 42 138 144	#2A8A90 Accent
+ 63 181 188	#3FB5BC Accent - edge peak
+  5   8  15	#05080F Shadow
+ 52  66  90	#34425A Enemy body
+111 134 170	#6F86AA Enemy rim
+  7  11  22	#070B16 Enemy outline

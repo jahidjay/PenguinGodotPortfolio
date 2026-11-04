@@ -1,0 +1,15 @@
+GIMP Palette
+Name: pal_1941
+Columns: 8
+#
+# MorutJan - 1941 olive/sepia - delta coast, colonial port (4.5, 6.2)
+# Source of truth: design/art/art-bible.md section 4. Edit there first.
+#
+110 130 100	#6E8264 Sky
+ 90 107  78	#5A6B4E Far
+122 106  72	#7A6A48 Mid
+ 76  90  60	#4C5A3C Ground
+138 111  74	#8A6F4A Accent (muted)
+ 46  54  38	#2E3626 Shadow
+ 59  66  40	#3B4228 Enemy body
+ 20  24  15	#14180F Enemy outline

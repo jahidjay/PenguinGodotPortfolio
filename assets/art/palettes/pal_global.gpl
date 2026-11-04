@@ -1,0 +1,25 @@
+GIMP Palette
+Name: pal_global
+Columns: 8
+#
+# MorutJan - Global: the constants, every era (art bible 4.1, 4.3, 4.6)
+# Source of truth: design/art/art-bible.md section 4. Edit there first.
+#
+255 138  31	#FF8A1F Tracer Orange - player offense, bombs
+255 201  60	#FFC93C Ember Gold - reward, score, chain
+ 74  92 255	#4A5CFF Void Indigo - enemy bullet fill (orb)
+106 108 255	#6A6CFF Bullet fill - rice
+154 168 255	#9AA8FF Bullet fill - needle
+ 90  76 255	#5A4CFF Bullet fill - ring
+232 238 255	#E8EEFF Bullet core - orb
+238 240 255	#EEF0FF Bullet core - rice
+255 255 255	#FFFFFF Bullet core - needle / Critical Break flash
+232 228 255	#E8E4FF Bullet core - ring inner edge
+ 11  11  42	#0B0B2A Ink - enemy and bullet outline ONLY
+244 235 214	#F4EBD6 Cream - UI text, neutral highlight, pickup body
+ 30  27  24	#1E1B18 Cabinet Char - UI panel base
+224  58  62	#E03A3E Alarm Red - plate edge, bar fill, glyph fill. NEVER text
+242  73  77	#F2494D Alarm Flare - failure/danger words ONLY. Never a fill
+255 176   0	#FFB000 Amber - warning banner, flak fuse spark
+255 244 208	#FFF4D0 Critical Break burst, inner
+255 179  71	#FFB347 Critical Break burst, outer

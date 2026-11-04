@@ -1,0 +1,15 @@
+GIMP Palette
+Name: pal_players
+Columns: 8
+#
+# MorutJan - Player identity and shots (art bible 4.4)
+# Source of truth: design/art/art-bible.md section 4. Edit there first.
+#
+255  90  54	#FF5A36 P1 Vermillion - solid ring, 1 pip
+245 224  46	#F5E02E P2 Yellow - dashed ring, 2 pips
+ 47 210 122	#2FD27A P3 Green - dotted ring, 3 pips
+255 138 216	#FF8AD8 P4 Pink - double ring, 4 pips
+255 242 176	#FFF2B0 Player shot core
+255 184  46	#FFB82E Player shot fill
+255 122  26	#FF7A1A Player shot edge (no dark outline)
+255 255 255	#FFFFFF Hitbox dot - 1 px, always visible

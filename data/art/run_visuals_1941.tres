@@ -1,0 +1,48 @@
+[gd_resource type="Resource" script_class="RunVisuals" load_steps=32 format=3]
+
+[ext_resource type="Script" path="res://src/gameplay/run/run_visuals.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/art/players/char_sentry_p1_48x48.png" id="t0"]
+[ext_resource type="Texture2D" path="res://assets/art/players/char_sentry_p2_48x48.png" id="t1"]
+[ext_resource type="Texture2D" path="res://assets/art/players/char_sentry_p3_48x48.png" id="t2"]
+[ext_resource type="Texture2D" path="res://assets/art/players/char_sentry_p4_48x48.png" id="t3"]
+[ext_resource type="Texture2D" path="res://assets/art/players/char_breaker_p1_48x48.png" id="t4"]
+[ext_resource type="Texture2D" path="res://assets/art/players/char_breaker_p2_48x48.png" id="t5"]
+[ext_resource type="Texture2D" path="res://assets/art/players/char_breaker_p3_48x48.png" id="t6"]
+[ext_resource type="Texture2D" path="res://assets/art/players/char_breaker_p4_48x48.png" id="t7"]
+[ext_resource type="Texture2D" path="res://assets/art/players/char_lancer_p1_48x48.png" id="t8"]
+[ext_resource type="Texture2D" path="res://assets/art/players/char_lancer_p2_48x48.png" id="t9"]
+[ext_resource type="Texture2D" path="res://assets/art/players/char_lancer_p3_48x48.png" id="t10"]
+[ext_resource type="Texture2D" path="res://assets/art/players/char_lancer_p4_48x48.png" id="t11"]
+[ext_resource type="Texture2D" path="res://assets/art/players/char_leech_p1_48x48.png" id="t12"]
+[ext_resource type="Texture2D" path="res://assets/art/players/char_leech_p2_48x48.png" id="t13"]
+[ext_resource type="Texture2D" path="res://assets/art/players/char_leech_p3_48x48.png" id="t14"]
+[ext_resource type="Texture2D" path="res://assets/art/players/char_leech_p4_48x48.png" id="t15"]
+[ext_resource type="Texture2D" path="res://assets/art/players/icon_hitbox_p1_12.png" id="t16"]
+[ext_resource type="Texture2D" path="res://assets/art/players/icon_hitbox_p2_12.png" id="t17"]
+[ext_resource type="Texture2D" path="res://assets/art/players/icon_hitbox_p3_12.png" id="t18"]
+[ext_resource type="Texture2D" path="res://assets/art/players/icon_hitbox_p4_12.png" id="t19"]
+[ext_resource type="Texture2D" path="res://assets/art/shots_fx/shot_streak_10x18.png" id="t20"]
+[ext_resource type="Texture2D" path="res://assets/art/env/1941/strips/env_strip_far_1941_1280.png" id="t21"]
+[ext_resource type="Texture2D" path="res://assets/art/env/1941/strips/env_strip_mid_1941_1920.png" id="t22"]
+[ext_resource type="Texture2D" path="res://assets/art/players/drone_pod_p1_12.png" id="drone"]
+[ext_resource type="Texture2D" path="res://assets/art/items/item_pod_16.png" id="i_pod"]
+[ext_resource type="Texture2D" path="res://assets/art/items/item_chain_14.png" id="i_chain"]
+[ext_resource type="Texture2D" path="res://assets/art/items/item_medal_14.png" id="i_medal"]
+[ext_resource type="Texture2D" path="res://assets/art/items/item_1up_16.png" id="i_1up"]
+[ext_resource type="Texture2D" path="res://assets/art/items/item_gem_10.png" id="i_gem"]
+[ext_resource type="Texture2D" path="res://assets/art/shots_fx/bullet_atlas_64x16.png" id="b_atlas"]
+
+[resource]
+script = ExtResource("1")
+plane_sprites = Array[Texture2D]([ExtResource("t8"), ExtResource("t9"), ExtResource("t10"), ExtResource("t11"), ExtResource("t12"), ExtResource("t13"), ExtResource("t14"), ExtResource("t15"), ExtResource("t0"), ExtResource("t1"), ExtResource("t2"), ExtResource("t3"), ExtResource("t4"), ExtResource("t5"), ExtResource("t6"), ExtResource("t7")])
+hitbox_sprites = Array[Texture2D]([ExtResource("t16"), ExtResource("t17"), ExtResource("t18"), ExtResource("t19")])
+drone_sprite = ExtResource("drone")
+item_sprites = Array[Texture2D]([ExtResource("i_pod"), ExtResource("i_chain"), ExtResource("i_medal"), ExtResource("i_1up"), ExtResource("i_gem")])
+shot_sprite = ExtResource("t20")
+strip_far = ExtResource("t21")
+strip_mid = ExtResource("t22")
+bullet_colors = PackedColorArray(0.290196, 0.360784, 1, 1, 0.415686, 0.423529, 1, 1, 0.603922, 0.658824, 1, 1, 0.352941, 0.298039, 1, 1)
+far_scroll_per_tick = 0.25
+mid_scroll_per_tick = 0.6
+bullet_atlas = ExtResource("b_atlas")
+bullet_atlas_cells = 4

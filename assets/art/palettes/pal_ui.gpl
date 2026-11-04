@@ -1,0 +1,17 @@
+GIMP Palette
+Name: pal_ui
+Columns: 8
+#
+# MorutJan - UI, constant across eras, 20% era tint on frames only (4.7)
+# Source of truth: design/art/art-bible.md section 4. Edit there first.
+#
+244 235 214	#F4EBD6 Text fill - Cream
+255 201  60	#FFC93C Text fill - Gold, score and chain only
+242  73  77	#F2494D Text fill - Alarm Flare, failure headline only
+ 20  17  14	#14110E Text outline - 1 px, all 8 sides, never thinner
+ 30  27  24	#1E1B18 Plate base - Cabinet Char
+ 90  81  72	#5A5148 Plate edge
+224  58  62	#E03A3E Plate edge / bar fill / glyph - Alarm Red
+ 42  15  18	#2A0F12 Boss bar track
+255 176   0	#FFB000 Warning amber (with black diagonal stripes)
+255 226 122	#FFE27A Bright Gold - chain milestone edge (PENDING art-director)
