@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="EnemyDef" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://src/gameplay/enemy/enemy_def.gd" id="enemy_script"]
+[ext_resource type="Script" path="res://src/gameplay/enemy/enemy_path_def.gd" id="path_script"]
+
+[ext_resource type="Texture2D" path="res://assets/art/enemies/1941/enemy_popcorn_scout_1941_24.png" id="spr"]
+
+[sub_resource type="Resource" id="path"]
+script = ExtResource("path_script")
+kind = 1
+descent = 110.0
+amplitude = 52.0
+period = 150
+phase = 0.0
+
+[resource]
+script = ExtResource("enemy_script")
+id = &"scout_1941"
+size_class = 0
+layer = 0
+body_radius = 8.0
+hurt_pad = 2.0
+hurtbox_count = 1
+hp = 20
+max_life_ticks = 900
+cancel_radius = 0.0
+muzzle_offset = Vector2(0.0, 8.0)
+path = SubResource("path")
+sprite = ExtResource("spr")

@@ -1,0 +1,257 @@
+; Stage 1 of 1941: the river mouth, the sandbars, the flak row, the crossing,
+; the approach, then the Flying Fortress.
+;
+; Carrier mix follows the Powerups contract (powerups-and-drops.md F2): four
+; SMALL, two MEDIUM, two LARGE per stage. The first carrier of wave 1 has a
+; POD override (Rule 7a), so a new player holds a drone within ten seconds
+; and can SEE what a pod is before the table starts rolling. The fourth
+; carrier destroyed drops the stage 1-up (Rule 11).
+;
+; Wave lengths: min_ticks is the pacing floor, max_ticks the ceiling that
+; stops one survivor holding a wave open. Both are tighter than the first
+; draft, which could take 67 seconds to reach the boss.
+[gd_resource type="Resource" script_class="StageDef" load_steps=26 format=3]
+
+[ext_resource type="Script" path="res://src/gameplay/stage/stage_def.gd" id="st"]
+[ext_resource type="Script" path="res://src/gameplay/stage/wave_def.gd" id="wv"]
+[ext_resource type="Script" path="res://src/gameplay/stage/spawn_event_def.gd" id="ev"]
+[ext_resource type="Resource" path="res://data/enemies/1941/boss_fortress.tres" id="e_boss_fortress"]
+[ext_resource type="Resource" path="res://data/enemies/1941/flak_gunner.tres" id="e_flak_gunner"]
+[ext_resource type="Resource" path="res://data/enemies/1941/heavy_bomber.tres" id="e_heavy_bomber"]
+[ext_resource type="Resource" path="res://data/enemies/1941/prop_fighter.tres" id="e_prop_fighter"]
+[ext_resource type="Resource" path="res://data/enemies/1941/scout.tres" id="e_scout"]
+
+[sub_resource type="Resource" id="ev0"]
+script = ExtResource("ev")
+enemy = ExtResource("e_scout")
+at_tick = 30
+count = 4
+stagger = 20
+origin = Vector2(90.0, -20.0)
+step = Vector2(0.0, 0.0)
+intensity = 0.0
+
+[sub_resource type="Resource" id="ev1"]
+script = ExtResource("ev")
+enemy = ExtResource("e_scout")
+at_tick = 90
+count = 1
+stagger = 0
+origin = Vector2(180.0, -20.0)
+step = Vector2(0.0, 0.0)
+intensity = 0.0
+carrier = true
+drop_override = 0
+
+[sub_resource type="Resource" id="ev2"]
+script = ExtResource("ev")
+enemy = ExtResource("e_scout")
+at_tick = 150
+count = 4
+stagger = 20
+origin = Vector2(270.0, -20.0)
+step = Vector2(0.0, 0.0)
+mirror = true
+intensity = 0.0
+
+[sub_resource type="Resource" id="ev3"]
+script = ExtResource("ev")
+enemy = ExtResource("e_prop_fighter")
+at_tick = 230
+count = 1
+stagger = 0
+origin = Vector2(120.0, -20.0)
+step = Vector2(0.0, 0.0)
+intensity = 0.0
+carrier = true
+
+[sub_resource type="Resource" id="wave0"]
+script = ExtResource("wv")
+label = "RIVER MOUTH"
+min_ticks = 240
+max_ticks = 900
+events = Array[ExtResource("ev")]([SubResource("ev0"), SubResource("ev1"), SubResource("ev2"), SubResource("ev3")])
+
+[sub_resource type="Resource" id="ev4"]
+script = ExtResource("ev")
+enemy = ExtResource("e_scout")
+at_tick = 20
+count = 5
+stagger = 16
+origin = Vector2(60.0, -20.0)
+step = Vector2(0.0, 0.0)
+intensity = 0.1
+
+[sub_resource type="Resource" id="ev5"]
+script = ExtResource("ev")
+enemy = ExtResource("e_scout")
+at_tick = 110
+count = 5
+stagger = 16
+origin = Vector2(300.0, -20.0)
+step = Vector2(0.0, 0.0)
+mirror = true
+intensity = 0.1
+
+[sub_resource type="Resource" id="ev6"]
+script = ExtResource("ev")
+enemy = ExtResource("e_prop_fighter")
+at_tick = 180
+count = 3
+stagger = 36
+origin = Vector2(240.0, -20.0)
+step = Vector2(-30.0, 0.0)
+intensity = 0.1
+
+[sub_resource type="Resource" id="ev7"]
+script = ExtResource("ev")
+enemy = ExtResource("e_flak_gunner")
+at_tick = 260
+count = 1
+stagger = 0
+origin = Vector2(180.0, -30.0)
+step = Vector2(0.0, 0.0)
+intensity = 0.0
+carrier = true
+
+[sub_resource type="Resource" id="wave1"]
+script = ExtResource("wv")
+label = "THE SANDBARS"
+min_ticks = 300
+max_ticks = 1080
+events = Array[ExtResource("ev")]([SubResource("ev4"), SubResource("ev5"), SubResource("ev6"), SubResource("ev7")])
+
+[sub_resource type="Resource" id="ev8"]
+script = ExtResource("ev")
+enemy = ExtResource("e_flak_gunner")
+at_tick = 30
+count = 1
+stagger = 0
+origin = Vector2(100.0, -30.0)
+step = Vector2(0.0, 0.0)
+intensity = 0.2
+
+[sub_resource type="Resource" id="ev9"]
+script = ExtResource("ev")
+enemy = ExtResource("e_flak_gunner")
+at_tick = 150
+count = 1
+stagger = 0
+origin = Vector2(260.0, -30.0)
+step = Vector2(0.0, 0.0)
+intensity = 0.2
+
+[sub_resource type="Resource" id="ev10"]
+script = ExtResource("ev")
+enemy = ExtResource("e_scout")
+at_tick = 80
+count = 6
+stagger = 18
+origin = Vector2(180.0, -20.0)
+step = Vector2(0.0, 0.0)
+intensity = 0.2
+
+[sub_resource type="Resource" id="ev11"]
+script = ExtResource("ev")
+enemy = ExtResource("e_scout")
+at_tick = 230
+count = 2
+stagger = 40
+origin = Vector2(60.0, -20.0)
+step = Vector2(0.0, 0.0)
+intensity = 0.2
+carrier = true
+
+[sub_resource type="Resource" id="wave2"]
+script = ExtResource("wv")
+label = "FLAK ROW"
+min_ticks = 300
+max_ticks = 1080
+events = Array[ExtResource("ev")]([SubResource("ev8"), SubResource("ev9"), SubResource("ev10"), SubResource("ev11")])
+
+[sub_resource type="Resource" id="ev12"]
+script = ExtResource("ev")
+enemy = ExtResource("e_prop_fighter")
+at_tick = 20
+count = 4
+stagger = 30
+origin = Vector2(90.0, -20.0)
+step = Vector2(0.0, 0.0)
+intensity = 0.35
+
+[sub_resource type="Resource" id="ev13"]
+script = ExtResource("ev")
+enemy = ExtResource("e_prop_fighter")
+at_tick = 140
+count = 4
+stagger = 30
+origin = Vector2(270.0, -20.0)
+step = Vector2(0.0, 0.0)
+mirror = true
+intensity = 0.35
+
+[sub_resource type="Resource" id="ev14"]
+script = ExtResource("ev")
+enemy = ExtResource("e_heavy_bomber")
+at_tick = 240
+count = 1
+stagger = 0
+origin = Vector2(180.0, -50.0)
+step = Vector2(0.0, 0.0)
+intensity = 0.2
+carrier = true
+
+[sub_resource type="Resource" id="wave3"]
+script = ExtResource("wv")
+label = "THE CROSSING"
+min_ticks = 360
+max_ticks = 1200
+events = Array[ExtResource("ev")]([SubResource("ev12"), SubResource("ev13"), SubResource("ev14")])
+
+[sub_resource type="Resource" id="ev15"]
+script = ExtResource("ev")
+enemy = ExtResource("e_flak_gunner")
+at_tick = 30
+count = 2
+stagger = 90
+origin = Vector2(70.0, -30.0)
+step = Vector2(220.0, 0.0)
+intensity = 0.5
+
+[sub_resource type="Resource" id="ev16"]
+script = ExtResource("ev")
+enemy = ExtResource("e_prop_fighter")
+at_tick = 150
+count = 3
+stagger = 28
+origin = Vector2(140.0, -20.0)
+step = Vector2(0.0, 0.0)
+intensity = 0.5
+carrier = true
+
+[sub_resource type="Resource" id="ev17"]
+script = ExtResource("ev")
+enemy = ExtResource("e_heavy_bomber")
+at_tick = 280
+count = 1
+stagger = 0
+origin = Vector2(180.0, -50.0)
+step = Vector2(0.0, 0.0)
+intensity = 0.4
+carrier = true
+
+[sub_resource type="Resource" id="wave4"]
+script = ExtResource("wv")
+label = "THE APPROACH"
+min_ticks = 360
+max_ticks = 1200
+events = Array[ExtResource("ev")]([SubResource("ev15"), SubResource("ev16"), SubResource("ev17")])
+
+[resource]
+script = ExtResource("st")
+label = "STAGE 1"
+era = "1941"
+waves = Array[ExtResource("wv")]([SubResource("wave0"), SubResource("wave1"), SubResource("wave2"), SubResource("wave3"), SubResource("wave4")])
+boss = ExtResource("e_boss_fortress")
+boss_origin = Vector2(180.0, -60.0)
+boss_delay = 120

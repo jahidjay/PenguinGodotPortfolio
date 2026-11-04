@@ -1,0 +1,32 @@
+[gd_resource type="Resource" script_class="EnemyDef" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://src/gameplay/enemy/enemy_def.gd" id="enemy_script"]
+[ext_resource type="Script" path="res://src/gameplay/enemy/enemy_path_def.gd" id="path_script"]
+[ext_resource type="Script" path="res://src/gameplay/patterns/pattern_def.gd" id="pat_script"]
+[ext_resource type="Resource" path="res://data/patterns/wave_1941_aimed_fan.tres" id="p_wave_1941_aimed_fan"]
+
+[ext_resource type="Texture2D" path="res://assets/art/enemies/1941/enemy_popcorn_prop_1941_26.png" id="spr"]
+
+[sub_resource type="Resource" id="path"]
+script = ExtResource("path_script")
+kind = 1
+descent = 78.0
+amplitude = 70.0
+period = 210
+phase = 0.25
+
+[resource]
+script = ExtResource("enemy_script")
+id = &"prop_fighter_1941"
+size_class = 0
+layer = 0
+body_radius = 9.0
+hurt_pad = 2.0
+hurtbox_count = 1
+hp = 40
+max_life_ticks = 1200
+cancel_radius = 0.0
+muzzle_offset = Vector2(0.0, 9.0)
+path = SubResource("path")
+patterns = Array[ExtResource("pat_script")]([ExtResource("p_wave_1941_aimed_fan")])
+sprite = ExtResource("spr")

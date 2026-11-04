@@ -1,0 +1,40 @@
+[gd_resource type="Resource" script_class="EnemyDef" load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://src/gameplay/enemy/enemy_def.gd" id="enemy_script"]
+[ext_resource type="Script" path="res://src/gameplay/enemy/enemy_path_def.gd" id="path_script"]
+[ext_resource type="Script" path="res://src/gameplay/patterns/pattern_def.gd" id="pat_script"]
+[ext_resource type="Resource" path="res://data/patterns/wave_1941_wall.tres" id="p_wave_1941_wall"]
+[ext_resource type="Resource" path="res://data/patterns/wave_1941_spray.tres" id="p_wave_1941_spray"]
+
+[ext_resource type="Texture2D" path="res://assets/art/enemies/1941/enemy_large_bomber_1941_96.png" id="spr"]
+[ext_resource type="Texture2D" path="res://assets/art/enemies/1941/enemy_large_bomber_1941_96_plate.png" id="spr_plate"]
+
+[sub_resource type="Resource" id="path"]
+script = ExtResource("path_script")
+kind = 2
+hover_offset = Vector2(0.0, 200.0)
+enter_ticks = 90
+hover_ticks = 600
+drift_amplitude = 60.0
+drift_period = 300
+exit_velocity = Vector2(0.0, 200.0)
+
+[resource]
+script = ExtResource("enemy_script")
+id = &"heavy_bomber_1941"
+size_class = 2
+layer = 0
+body_radius = 18.0
+spine_half = 30.0
+hurt_pad = 2.0
+hurtbox_count = 1
+hp = 4000
+plating_ticks = 120
+plating_armor_pct = 50
+max_life_ticks = 2400
+cancel_radius = 72.0
+muzzle_offset = Vector2(0.0, 18.0)
+path = SubResource("path")
+patterns = Array[ExtResource("pat_script")]([ExtResource("p_wave_1941_wall"), ExtResource("p_wave_1941_spray")])
+sprite = ExtResource("spr")
+plating_sprite = ExtResource("spr_plate")

@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="EnemyDef" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://src/gameplay/enemy/enemy_def.gd" id="enemy_script"]
+[ext_resource type="Script" path="res://src/gameplay/enemy/enemy_path_def.gd" id="path_script"]
+[ext_resource type="Script" path="res://src/gameplay/patterns/pattern_def.gd" id="pat_script"]
+[ext_resource type="Resource" path="res://data/patterns/wave_1941_flak.tres" id="p_wave_1941_flak"]
+
+[ext_resource type="Texture2D" path="res://assets/art/enemies/1941/enemy_mid_flakgunner_1941_48.png" id="spr"]
+
+[sub_resource type="Resource" id="path"]
+script = ExtResource("path_script")
+kind = 0
+velocity = Vector2(0.0, 72.0)
+
+[resource]
+script = ExtResource("enemy_script")
+id = &"flak_gunner_1941"
+size_class = 1
+layer = 1
+body_radius = 12.0
+spine_half = 8.0
+hurt_pad = 2.0
+hurtbox_count = 1
+hp = 1200
+max_life_ticks = 1500
+cancel_radius = 40.0
+muzzle_offset = Vector2(0.0, 0.0)
+path = SubResource("path")
+patterns = Array[ExtResource("pat_script")]([ExtResource("p_wave_1941_flak")])
+sprite = ExtResource("spr")

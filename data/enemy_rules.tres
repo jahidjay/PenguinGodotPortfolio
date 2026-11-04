@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="EnemyRules" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/gameplay/enemy/enemy_rules.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+fire_inset = 4.0
+max_alive = 64
+retire_margin = 24.0

@@ -1,0 +1,40 @@
+[gd_resource type="Resource" script_class="EnemyDef" load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://src/gameplay/enemy/enemy_def.gd" id="enemy_script"]
+[ext_resource type="Script" path="res://src/gameplay/enemy/enemy_path_def.gd" id="path_script"]
+[ext_resource type="Script" path="res://src/gameplay/patterns/pattern_def.gd" id="pat_script"]
+[ext_resource type="Resource" path="res://data/patterns/fortress_core_spiral.tres" id="p_fortress_core_spiral"]
+[ext_resource type="Resource" path="res://data/patterns/fortress_turret_fan.tres" id="p_fortress_turret_fan"]
+[ext_resource type="Resource" path="res://data/patterns/fortress_engine_ring.tres" id="p_fortress_engine_ring"]
+[ext_resource type="Resource" path="res://data/patterns/fortress_core_rage_ring.tres" id="p_fortress_core_rage_ring"]
+
+[ext_resource type="Texture2D" path="res://assets/art/bosses/boss_fortress_hull_216.png" id="spr"]
+
+[sub_resource type="Resource" id="path"]
+script = ExtResource("path_script")
+kind = 2
+hover_offset = Vector2(0.0, 150.0)
+enter_ticks = 120
+hover_ticks = 100000
+drift_amplitude = 96.0
+drift_period = 420
+exit_velocity = Vector2(0.0, 0.0)
+
+[resource]
+script = ExtResource("enemy_script")
+id = &"fortress_1941"
+size_class = 2
+layer = 0
+body_radius = 30.0
+spine_half = 26.0
+hurt_pad = 3.0
+hurtbox_count = 1
+hp = 35200
+kill_class = 4
+plating_ticks = 0
+max_life_ticks = 0
+cancel_radius = 96.0
+muzzle_offset = Vector2(0.0, -6.0)
+path = SubResource("path")
+patterns = Array[ExtResource("pat_script")]([ExtResource("p_fortress_core_spiral"), ExtResource("p_fortress_turret_fan"), ExtResource("p_fortress_engine_ring"), ExtResource("p_fortress_core_rage_ring")])
+sprite = ExtResource("spr")
