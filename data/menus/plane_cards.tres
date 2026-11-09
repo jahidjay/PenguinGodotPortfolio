@@ -1,0 +1,36 @@
+[gd_resource type="Resource" script_class="PlaneCardSet" load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://src/ui/menu/plane_card.gd" id="1"]
+[ext_resource type="Script" path="res://src/ui/menu/plane_card_set.gd" id="2"]
+
+[sub_resource type="Resource" id="lancer"]
+script = ExtResource("1")
+plane_id = "lancer"
+kit_kind = 0
+available = true
+sprite_row = 0
+
+[sub_resource type="Resource" id="leech"]
+script = ExtResource("1")
+plane_id = "leech"
+kit_kind = 1
+available = true
+sprite_row = 1
+
+[sub_resource type="Resource" id="sentry"]
+script = ExtResource("1")
+plane_id = "sentry"
+kit_kind = 2
+available = true
+sprite_row = 2
+
+[sub_resource type="Resource" id="breaker"]
+script = ExtResource("1")
+plane_id = "breaker"
+kit_kind = 3
+available = true
+sprite_row = 3
+
+[resource]
+script = ExtResource("2")
+cards = Array[PlaneCard]([SubResource("lancer"), SubResource("leech"), SubResource("sentry"), SubResource("breaker")])
