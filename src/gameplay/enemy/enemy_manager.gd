@@ -14,6 +14,11 @@ extends RefCounted
 ## reaching an enemy is the same swept test as a bullet reaching a player —
 ## one implementation, and a 900 px/s shot cannot tunnel through a scout.
 ##
+## Leaving the field is not escaping: with [member EnemyRules.respawn_on_escape]
+## an enemy that flies off (or times out) re-enters from its spawn point, so a
+## wave ends only when it is shot down. Squads (one spawn group) get faster and
+## fire harder as their members fall ([enum Aggro]).
+##
 ## Scope: the MVP subset. One hurtbox circle per enemy (the GDD's 2 and 3 for
 ## MEDIUM and LARGE are marked below), no formations, no novelty stripping, no
 ## facing. Those arrive with the systems that drive them.
@@ -62,6 +67,19 @@ var _seen_tick := PackedInt32Array()
 var _carrier := PackedInt32Array()
 ## Forces one item kind instead of the drop table (Rule 7a). -1 rolls.
 var _drop_override := PackedInt32Array()
+## Which squad (spawn group) the enemy belongs to, and how big that squad is.
+## A squad of 1 never gets aggressive: it has no one to lose.
+var _squad := PackedInt32Array()
+var _squad_size := PackedInt32Array()
+## Path time in 1/[constant EnemyPath.SUBTICKS] ticks. Advances faster than
+## `_age` once the squad is aggressive.
+var _path_sub := PackedInt32Array()
+## Members shot down per squad id. Kept for the life of the stage, so a
+## survivor stays aggressive after it respawns.
+var _squad_lost := {}
+
+## How aggressive a squad's survivors are (see [EnemyRules] "Squad aggression").
+enum Aggro { NORMAL, HALF_SQUAD, ALONE }
 
 # Target arrays published to the player-shot pool, rebuilt each tick.
 var _t_x := PackedFloat32Array()
@@ -109,6 +127,9 @@ func _init(
 	_carrier.resize(MAX_ALIVE)
 	_drop_override.resize(MAX_ALIVE)
 	_drop_override.fill(-1)
+	_squad.resize(MAX_ALIVE)
+	_squad_size.resize(MAX_ALIVE)
+	_path_sub.resize(MAX_ALIVE)
 
 
 ## Brings one enemy onto the field. Returns its id, or 0 if refused.
@@ -116,6 +137,8 @@ func _init(
 ## `mirror` flips the path in x about the canvas centre (Rule 6), so one
 ## authored left entry serves both sides. `intensity` is frozen here for the
 ## enemy's whole life (Rule 4 / the Pattern library's Rule 6).
+## `event_id` also names the enemy's squad, and `squad_size` is how many
+## members that squad has in total.
 func spawn(
 	def: EnemyDef,
 	origin: Vector2,
@@ -124,7 +147,8 @@ func spawn(
 	event_id: int = 0,
 	member: int = 0,
 	carrier: bool = false,
-	drop_override: int = -1
+	drop_override: int = -1,
+	squad_size: int = 1
 ) -> int:
 	if _n >= mini(MAX_ALIVE, rules.max_alive) or def == null:
 		spawns_refused += 1
@@ -147,6 +171,9 @@ func spawn(
 	_seen_tick[i] = -1
 	_carrier[i] = 1 if (carrier or def.carrier) else 0
 	_drop_override[i] = drop_override
+	_squad[i] = event_id
+	_squad_size[i] = maxi(1, squad_size)
+	_path_sub[i] = 0
 	_emitter[i] = null
 	# Rule 15 of the pattern library: the stream is seeded from the owner's
 	# authored id, which for a wave enemy is `event_id * 16 + member_index`.
@@ -170,7 +197,9 @@ func tick(t: int) -> void:
 		_prev_x[i] = _x[i]
 		_prev_y[i] = _y[i]
 
-		var off := EnemyPath.offset(def.path, age)
+		var aggro := aggro_of(i)
+		_path_sub[i] += _path_step(aggro)
+		var off := EnemyPath.offset_sub(def.path, _path_sub[i])
 		if _mirror[i] != 0:
 			off.x = -off.x
 		_x[i] = _origin_x[i] + off.x
@@ -191,15 +220,70 @@ func tick(t: int) -> void:
 			e.update(
 				Vector2(_x[i], _y[i]) + def.muzzle_offset,
 				Vector2(_x[i], _y[i]),
-				_intensity[i]
+				minf(1.0, _intensity[i] + _intensity_bonus(aggro))
 			)
 
 		if _should_retire(i):
 			escaped_total += 1
 			_log.append(TickEventLog.Kind.ENEMY_ESCAPED, -1, _id[i])
-			_remove(i)
+			if rules.respawn_on_escape:
+				_respawn(i)
+				i += 1
+			else:
+				_remove(i)
 			continue
 		i += 1
+
+
+## Sends enemy `i` back to its spawn point to fly its path again. It keeps its
+## hp, its squad and its carrier flag; its gun re-arms when it is back on the
+## field (Rule 18).
+func _respawn(i: int) -> void:
+	var e = _emitter[i]
+	if e != null and patterns != null:
+		patterns.remove_emitters_of(e.owner_id, false)
+	_emitter[i] = null
+	_age[i] = 0
+	_path_sub[i] = 0
+	_seen_tick[i] = -1
+	_x[i] = _origin_x[i]
+	_y[i] = _origin_y[i]
+	# No sweep from the exit point to the entry point.
+	_prev_x[i] = _x[i]
+	_prev_y[i] = _y[i]
+
+
+## How aggressive enemy `i` is, from how much of its squad has been shot down.
+func aggro_of(i: int) -> int:
+	var size := _squad_size[i]
+	if size <= 1:
+		return Aggro.NORMAL
+	var lost: int = _squad_lost.get(_squad[i], 0)
+	if size - lost <= 1:
+		return Aggro.ALONE
+	if lost * 2 >= size:
+		return Aggro.HALF_SQUAD
+	return Aggro.NORMAL
+
+
+## Path time advanced per tick, in sub-ticks.
+func _path_step(aggro: int) -> int:
+	var speed := 1.0
+	match aggro:
+		Aggro.HALF_SQUAD:
+			speed = rules.half_squad_speed
+		Aggro.ALONE:
+			speed = rules.alone_speed
+	return maxi(1, roundi(speed * EnemyPath.SUBTICKS))
+
+
+func _intensity_bonus(aggro: int) -> float:
+	match aggro:
+		Aggro.HALF_SQUAD:
+			return rules.half_squad_intensity
+		Aggro.ALONE:
+			return rules.alone_intensity
+	return 0.0
 
 
 ## True once the body has entered the play field: only then may it be hit, and
@@ -228,7 +312,7 @@ func _muzzle_in_fire_zone(i: int) -> bool:
 	)
 
 
-## Retired when its life runs out, or once it has been on the field and then
+## Leaves the field (respawned or retired, per the rules) when its life runs out, or once it has been on the field and then
 ## left it for good (down past the bottom, or out the side).
 func _should_retire(i: int) -> bool:
 	var def := _def[i]
@@ -303,6 +387,8 @@ func kill(i: int, slot: int, enemy_bullets: BulletField) -> int:
 		)
 	_log.append(TickEventLog.Kind.ENEMY_KILLED, slot, _id[i])
 	killed_total += 1
+	if _squad_size[i] > 1:
+		_squad_lost[_squad[i]] = _squad_lost.get(_squad[i], 0) + 1
 	_remove(i)
 	return kill_class
 
@@ -330,6 +416,9 @@ func _remove(i: int) -> void:
 		_seen_tick[i] = _seen_tick[last]
 		_carrier[i] = _carrier[last]
 		_drop_override[i] = _drop_override[last]
+		_squad[i] = _squad[last]
+		_squad_size[i] = _squad_size[last]
+		_path_sub[i] = _path_sub[last]
 	_def[last] = null
 	_emitter[last] = null
 	_n = last
@@ -339,11 +428,12 @@ func _remove(i: int) -> void:
 func clear_all() -> void:
 	while _n > 0:
 		_remove(_n - 1)
+	_squad_lost.clear()
 
 
 ## Plane kits Rule 15: the nearest hurtbox ABOVE `y_from` whose x-range
 ## overlaps the column, or -1. Ties break by index, never by chance, so a
-## laser and a parked beam always agree on what they are pointing at.
+## laser and anything else aiming up a column always agree on what they are pointing at.
 func first_in_column(x: float, half_width: float, y_from: float) -> int:
 	var best := -1
 	var best_y := -INF
@@ -444,4 +534,5 @@ func state_hash() -> int:
 		h = (h ^ int(_y[i] * 64.0)) * 1099511628211
 		h = (h ^ _hp[i]) * 1099511628211
 		h = (h ^ _age[i]) * 1099511628211
+		h = (h ^ _path_sub[i]) * 1099511628211
 	return h

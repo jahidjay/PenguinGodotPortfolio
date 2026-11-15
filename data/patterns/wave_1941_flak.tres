@@ -14,3 +14,4 @@ offset_mode = 1
 flak_distance = 240.0
 standoff = 56.0
 flak_delay = 36
+interval_at_full = 100

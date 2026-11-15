@@ -11,3 +11,4 @@ interval = 138
 count = 7
 speed = 110.0
 spacing = 16.0
+interval_at_full = 122

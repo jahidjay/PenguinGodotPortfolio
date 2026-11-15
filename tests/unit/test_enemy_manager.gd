@@ -24,6 +24,10 @@ func _init() -> void:
 	test_enemy_manager_plated_enemy_takes_reduced_damage_and_cannot_die()
 	test_enemy_manager_kill_pays_the_size_class_and_cancels_bullets()
 	test_enemy_manager_retires_an_enemy_that_outlives_its_limit()
+	test_enemy_manager_respawns_an_enemy_that_leaves_the_field()
+	test_enemy_manager_thinned_squad_flies_faster_and_lone_survivor_faster_still()
+	test_enemy_manager_squad_of_one_never_gets_aggressive()
+	test_stage_director_holds_the_wave_until_every_enemy_is_shot_down()
 	test_enemy_manager_refuses_a_spawn_past_the_alive_cap()
 	test_enemy_manager_same_inputs_produce_the_same_state_hash()
 
@@ -203,6 +207,7 @@ func test_enemy_manager_kill_pays_the_size_class_and_cancels_bullets() -> void:
 func test_enemy_manager_retires_an_enemy_that_outlives_its_limit() -> void:
 	var rig := _rig()
 	var manager: EnemyManager = rig[0]
+	manager.rules.respawn_on_escape = false
 	var def := _scout()
 	def.max_life_ticks = 30
 	manager.spawn(def, Vector2(180.0, 100.0), false, 0.0)
@@ -211,6 +216,80 @@ func test_enemy_manager_retires_an_enemy_that_outlives_its_limit() -> void:
 	_assert_eq(manager.count(), 0, "it is gone after its life runs out")
 	_assert_eq(manager.escaped_total, 1, "counted as escaped, not killed")
 	_assert_eq(manager.killed_total, 0, "so it pays no score")
+
+
+func test_enemy_manager_respawns_an_enemy_that_leaves_the_field() -> void:
+	var rig := _rig()
+	var manager: EnemyManager = rig[0]
+	var def := _scout()
+	var origin := Vector2(180.0, 20.0)
+	manager.spawn(def, origin, false, 0.0)
+	manager.damage(0, 5)
+	# 90 px/s from y=20 clears the bottom (640 + margin) in under 8 s.
+	var came_back := false
+	for t: int in range(1, 600):
+		manager.tick(t)
+		if manager.escaped_total == 1 and not came_back:
+			came_back = true
+			_assert_eq(manager.position_of(0), origin, "it is back at its spawn point")
+	_assert(came_back, "it flew off the bottom")
+	_assert_eq(manager.count(), 1, "and is still on the field, not retired")
+	_assert_eq(manager.hp_of(0), 15, "with the damage it already took")
+
+
+func test_enemy_manager_thinned_squad_flies_faster_and_lone_survivor_faster_still() -> void:
+	var rig := _rig()
+	var manager: EnemyManager = rig[0]
+	var def := _scout()
+	for m: int in range(4):
+		manager.spawn(def, Vector2(40.0 + 80.0 * m, 100.0), false, 0.0, 7, m, false, -1, 4)
+	_assert_eq(manager.aggro_of(0), EnemyManager.Aggro.NORMAL, "a full squad is calm")
+	manager.kill(3, 0, null)
+	manager.kill(2, 0, null)
+	_assert_eq(manager.aggro_of(0), EnemyManager.Aggro.HALF_SQUAD, "half the squad down")
+	var y0 := manager.position_of(0).y
+	manager.tick(1)
+	_assert_close(manager.position_of(0).y - y0, 1.5 * 1.25, "it descends 1.25x as fast")
+	manager.kill(1, 0, null)
+	_assert_eq(manager.aggro_of(0), EnemyManager.Aggro.ALONE, "the last one is alone")
+	y0 = manager.position_of(0).y
+	manager.tick(2)
+	_assert_close(manager.position_of(0).y - y0, 1.5 * 1.5, "and descends 1.5x as fast")
+
+
+func test_enemy_manager_squad_of_one_never_gets_aggressive() -> void:
+	var rig := _rig()
+	var manager: EnemyManager = rig[0]
+	manager.spawn(_scout(), Vector2(180.0, 100.0), false, 0.0, 3, 0, false, -1, 1)
+	_assert_eq(manager.aggro_of(0), EnemyManager.Aggro.NORMAL, "a lone heavy is not 'alone'")
+
+
+func test_stage_director_holds_the_wave_until_every_enemy_is_shot_down() -> void:
+	var rig := _rig()
+	var manager: EnemyManager = rig[0]
+	var log: TickEventLog = rig[3]
+	var stage := StageDef.new()
+	for w: int in range(2):
+		var event := SpawnEventDef.new()
+		event.enemy = _scout()
+		event.at_tick = 0
+		event.count = 2
+		event.stagger = 0
+		event.origin = Vector2(180.0, 100.0)
+		var wave := WaveDef.new()
+		wave.min_ticks = 10
+		wave.events = [event]
+		stage.waves.push_back(wave)
+	var director := StageDirector.new(stage, manager, log)
+	for t: int in range(1, 3000):
+		director.tick(t)
+		manager.tick(t)
+	_assert_eq(director.wave_index, 0, "50 s with survivors flying around: still wave 1")
+	_assert_eq(manager.count(), 2, "both survivors keep coming back")
+	manager.kill(1, 0, null)
+	manager.kill(0, 0, null)
+	director.tick(3000)
+	_assert_eq(director.wave_index, 1, "shooting the last one down starts wave 2")
 
 
 func test_enemy_manager_refuses_a_spawn_past_the_alive_cap() -> void:

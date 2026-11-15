@@ -11,3 +11,5 @@ interval = 90
 count = 3
 speed = 150.0
 spread_rad = 0.21
+interval_at_full = 54
+count_at_full = 5

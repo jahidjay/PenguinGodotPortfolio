@@ -100,7 +100,8 @@ func _tick_waves(t: int) -> void:
 				wave_index * 64 + e,
 				member,
 				event.carrier,
-				event.drop_override
+				event.drop_override,
+				event.count
 			)
 			if id == 0:
 				break   # the field is full: this member is retried next tick
@@ -114,10 +115,12 @@ func _tick_waves(t: int) -> void:
 	for e: int in range(wave.events.size()):
 		if _fired[e] == 0:
 			all_fired = false
+	# A wave ends only when every enemy it sent has been SHOT DOWN: one that
+	# flies off the field comes back around (EnemyRules.respawn_on_escape).
 	var cleared := (
 		all_fired and _wave_spawned and enemies.alive_count() == 0 and wave_ticks >= wave.min_ticks
 	)
-	if cleared or wave_ticks >= wave.max_ticks:
+	if cleared:
 		_log.append(TickEventLog.Kind.WAVE_CLEARED, -1, wave_index)
 		if wave_index + 1 < stage.waves.size():
 			_begin_wave(wave_index + 1)

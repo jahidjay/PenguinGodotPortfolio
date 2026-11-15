@@ -5,7 +5,7 @@ extends SceneTree
 ## collision-damage-lives.md Phase A).
 ##
 ## This is the test that fails if the game stops being a game — if nothing can
-## be shot, if a wave never clears, or if the boss never comes.
+## be shot, if a wave clears with enemies left, or if the boss never comes.
 ##
 ## Run from the project folder:
 ##   godot --headless --script res://tests/integration/test_stage_run.gd
@@ -14,7 +14,7 @@ var _failures := 0
 
 
 func _init() -> void:
-	test_stage_run_progresses_through_every_wave_to_the_boss()
+	test_stage_run_waves_wait_for_kills_then_progress_to_the_boss()
 	test_stage_run_player_shots_kill_enemies_and_climb_the_chain()
 	test_stage_run_armoured_hits_count_for_the_chain_without_killing()
 	test_stage_run_is_deterministic_across_two_identical_runs()
@@ -24,16 +24,28 @@ func _init() -> void:
 	quit(1 if _failures > 0 else 0)
 
 
-func test_stage_run_progresses_through_every_wave_to_the_boss() -> void:
-	# Arrange: one player who never fires, so the waves run on their timers.
+func test_stage_run_waves_wait_for_kills_then_progress_to_the_boss() -> void:
+	# Arrange: one player who never fires.
 	var world := _world(1, false)
+
+	# Act 1: nobody shoots, so wave 1 must never end — its enemies keep
+	# coming back around. The probe is kept alive on purpose: this test is
+	# about the director, and a dead player stops the run.
+	for t: int in range(3600):
+		world.planes.request_invuln(0, 2)
+		world.tick(world.game_tick)
+	_assert_eq(world.director.wave_index, 0, "a minute without a kill: still wave 1")
+	_assert(world.enemies.count() > 0, "with its enemies still flying")
+
+	# Act 2: now every enemy is shot down the moment it can be hit.
 	var waves_seen := {}
 	var boss_tick := -1
-
-	# Act: the probe never dodges, so it is kept alive on purpose — this test
-	# is about the director, and a dead player now stops the run (as it should).
 	for t: int in range(12000):
 		world.planes.request_invuln(0, 2)
+		if boss_tick < 0:
+			for i: int in range(world.enemies.count() - 1, -1, -1):
+				if world.enemies.is_hittable(i):
+					world.enemies.kill(i, 0, world.enemy_bullets)
 		world.tick(world.game_tick)
 		waves_seen[world.director.wave_index] = true
 		if world.director.is_boss_alive() and boss_tick < 0:

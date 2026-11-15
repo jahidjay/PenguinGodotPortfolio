@@ -7,9 +7,8 @@
 ; and can SEE what a pod is before the table starts rolling. The fourth
 ; carrier destroyed drops the stage 1-up (Rule 11).
 ;
-; Wave lengths: min_ticks is the pacing floor, max_ticks the ceiling that
-; stops one survivor holding a wave open. Both are tighter than the first
-; draft, which could take 67 seconds to reach the boss.
+; Wave lengths: min_ticks is the pacing floor. A wave has no timeout: it ends
+; only when every enemy in it is shot down (survivors that fly off respawn).
 [gd_resource type="Resource" script_class="StageDef" load_steps=26 format=3]
 
 [ext_resource type="Script" path="res://src/gameplay/stage/stage_def.gd" id="st"]
@@ -69,7 +68,6 @@ carrier = true
 script = ExtResource("wv")
 label = "RIVER MOUTH"
 min_ticks = 240
-max_ticks = 900
 events = Array[ExtResource("ev")]([SubResource("ev0"), SubResource("ev1"), SubResource("ev2"), SubResource("ev3")])
 
 [sub_resource type="Resource" id="ev4"]
@@ -118,7 +116,6 @@ carrier = true
 script = ExtResource("wv")
 label = "THE SANDBARS"
 min_ticks = 300
-max_ticks = 1080
 events = Array[ExtResource("ev")]([SubResource("ev4"), SubResource("ev5"), SubResource("ev6"), SubResource("ev7")])
 
 [sub_resource type="Resource" id="ev8"]
@@ -166,7 +163,6 @@ carrier = true
 script = ExtResource("wv")
 label = "FLAK ROW"
 min_ticks = 300
-max_ticks = 1080
 events = Array[ExtResource("ev")]([SubResource("ev8"), SubResource("ev9"), SubResource("ev10"), SubResource("ev11")])
 
 [sub_resource type="Resource" id="ev12"]
@@ -205,7 +201,6 @@ carrier = true
 script = ExtResource("wv")
 label = "THE CROSSING"
 min_ticks = 360
-max_ticks = 1200
 events = Array[ExtResource("ev")]([SubResource("ev12"), SubResource("ev13"), SubResource("ev14")])
 
 [sub_resource type="Resource" id="ev15"]
@@ -244,7 +239,6 @@ carrier = true
 script = ExtResource("wv")
 label = "THE APPROACH"
 min_ticks = 360
-max_ticks = 1200
 events = Array[ExtResource("ev")]([SubResource("ev15"), SubResource("ev16"), SubResource("ev17")])
 
 [resource]
