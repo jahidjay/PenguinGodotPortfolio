@@ -24,6 +24,11 @@ func _init() -> void:
 	test_plane_kits_lancer_shield_blocks_enemy_bullets()
 	test_plane_kits_lancer_shield_drone_breaks_after_its_budget()
 	test_plane_kits_lancer_shield_fires_with_the_plane_gun()
+	test_plane_kits_lancer_lines_grow_with_drones()
+	test_plane_kits_lancer_docked_drones_focus_into_the_laser()
+	test_plane_kits_lancer_shield_runs_on_the_laser_bar()
+	test_plane_kits_lancer_low_bar_shield_is_short()
+	test_plane_kits_lancer_laser_and_shield_never_run_together()
 	test_plane_kits_leech_drones_latch_and_tick_damage()
 	test_plane_kits_ability_recalls_and_goes_on_cooldown()
 	test_plane_kits_leech_focused_shot_is_slower_and_harder()
@@ -161,7 +166,7 @@ func test_plane_kits_laser_burns_meter_damages_and_shields() -> void:
 	_run(rig, 9, {"fire": true})
 	var dealt := hp_before - enemies.hp_of(0)
 	# 10 active ticks, damage on every third: ticks 0, 3, 6, 9 = 4 events.
-	_assert_eq(dealt, 4 * kits.rules.laser_damage, "damage lands every third active tick")
+	_assert_eq(dealt, 4 * kits.laser_damage_of(0), "damage lands every third active tick")
 
 
 func test_plane_kits_laser_ends_on_release_and_on_empty_meter() -> void:
@@ -294,6 +299,99 @@ func test_plane_kits_lancer_shield_fires_with_the_plane_gun() -> void:
 	_assert(from_drone > 0, "and fires straight up with it (%d drone bullets)" % from_drone)
 
 
+func test_plane_kits_lancer_lines_grow_with_drones() -> void:
+	var rig := _rig()
+	var kits := _kits(rig)
+	var want_plane := [2, 2, 3, 3, 4]
+	for n: int in range(5):
+		kits.set_drone_count(0, n)
+		_assert_eq(kits.lancer_lines(0), want_plane[n], "%d drones: %d plane lines" % [n, want_plane[n]])
+		var want_drone := 2 if n == 4 else 1
+		_assert_eq(kits.drone_lines(0), want_drone, "%d drones: %d lines per drone" % [n, want_drone])
+
+	# And the volley really is that many bullets: no drones, one volley.
+	kits.set_drone_count(0, 0)
+	var before := kits.shots_fired
+	_run(rig, 1, {"fire": true})
+	_assert_eq(kits.shots_fired - before, 2, "a plane with no drones fires 2 lines")
+
+	# The full-power drone pair only belongs to the Lancer.
+	var leech := _rig(KitRules.Kind.LEECH)
+	_kits(leech).set_drone_count(0, 4)
+	_assert_eq(_kits(leech).drone_lines(0), 1, "other planes' drones stay at one line")
+
+
+func test_plane_kits_lancer_docked_drones_focus_into_the_laser() -> void:
+	var rig := _rig()
+	var kits := _kits(rig)
+	kits.set_drone_count(0, 0)
+	var alone := kits.laser_damage_of(0)
+	kits.set_drone_count(0, 4)
+	_assert_eq(
+		kits.laser_damage_of(0), alone + 4 * kits.rules.laser_drone_bonus,
+		"four docked drones each add their bonus to the beam"
+	)
+	_fill_meter(kits, 0)
+	_run(rig, 19, {"fire": true})
+	_assert(kits.is_laser_active(0), "the laser is on")
+	var before := kits.shots_fired
+	_run(rig, 16, {"fire": true})
+	_assert_eq(kits.shots_fired, before, "focusing drones fire no bullets of their own")
+
+
+func test_plane_kits_lancer_shield_runs_on_the_laser_bar() -> void:
+	var rig := _rig()
+	var kits := _kits(rig)
+	_fill_meter(kits, 0)
+	_run(rig, 1, {"fire": false, "drone": true})
+	_assert_eq(kits.ability_state(0), PlaneKits.Ability.ACTIVE, "the shield is up")
+	var full := kits.meter_of(0)
+	_run(rig, 10, {"fire": false})
+	_assert_eq(
+		kits.meter_of(0), full - 10 * kits.rules.shield_meter_per_tick,
+		"it drains the bar every tick"
+	)
+	var now := kits.meter_of(0)
+	kits.report_shot_hit(0)
+	_assert_eq(kits.meter_of(0), now, "and the bar does not refill while it is up")
+
+	var ticks_left := now / kits.rules.shield_meter_per_tick + 2
+	_run(rig, ticks_left, {"fire": false})
+	_assert_eq(kits.meter_of(0), 0, "it runs until the bar is empty")
+	_assert_eq(kits.ability_state(0), PlaneKits.Ability.COOLDOWN, "then the drones come home")
+
+
+func test_plane_kits_lancer_low_bar_shield_is_short() -> void:
+	var rig := _rig()
+	var kits := _kits(rig)
+	_run(rig, 1, {"fire": false, "drone": true})
+	_assert_eq(kits.ability_state(0), PlaneKits.Ability.ACTIVE, "an empty bar still deploys")
+	_run(rig, kits.rules.shield_low_meter_ticks - 2, {"fire": false})
+	_assert_eq(kits.ability_state(0), PlaneKits.Ability.ACTIVE, "for a short while")
+	_run(rig, 3, {"fire": false})
+	_assert_eq(
+		kits.ability_state(0), PlaneKits.Ability.COOLDOWN,
+		"and ends after shield_low_meter_ticks (%d)" % kits.rules.shield_low_meter_ticks
+	)
+
+
+func test_plane_kits_lancer_laser_and_shield_never_run_together() -> void:
+	var rig := _rig()
+	var kits := _kits(rig)
+	_fill_meter(kits, 0)
+	_run(rig, 1, {"fire": false, "drone": true})
+	_run(rig, 30, {"fire": true})
+	_assert(not kits.is_laser_active(0), "no laser while the shield holds the bar")
+
+	var rig2 := _rig()
+	var kits2 := _kits(rig2)
+	_fill_meter(kits2, 0)
+	_run(rig2, 20, {"fire": true})
+	_assert(kits2.is_laser_active(0), "the laser is on")
+	_run(rig2, 1, {"fire": true, "drone": true})
+	_assert(kits2.ability_state(0) != PlaneKits.Ability.ACTIVE, "a shield press during the laser is refused")
+
+
 func test_plane_kits_leech_drones_latch_and_tick_damage() -> void:
 	var rig := _rig(KitRules.Kind.LEECH)
 	var kits := _kits(rig)
@@ -313,7 +411,7 @@ func test_plane_kits_ability_recalls_and_goes_on_cooldown() -> void:
 	var rig := _rig()
 	var kits := _kits(rig)
 	_run(rig, 1, {"fire": false, "drone": true})
-	_run(rig, kits.rules.shield_ticks + 21, {"fire": false})
+	_run(rig, kits.rules.shield_low_meter_ticks + 21, {"fire": false})
 	_assert_eq(
 		kits.ability_state(0), PlaneKits.Ability.COOLDOWN, "the timer ends and the ability cools"
 	)
@@ -354,13 +452,16 @@ func test_plane_kits_death_clears_the_whole_kit() -> void:
 	var kits := _kits(rig)
 	var planes := _planes(rig)
 	_fill_meter(kits, 0)
-	_run(rig, 20, {"fire": true, "drone": true})
+	_run(rig, 20, {"fire": true})
 	_assert(kits.is_laser_active(0), "the laser is on before the death")
 
 	# The laser shields the plane every tick it burns (Rule 18a), so it has to
 	# be let go of and the grace waited out before anything can kill it. That
-	# is the laser working, not the test cheating.
+	# is the laser working, not the test cheating. The shield goes up once the
+	# laser is off (they share the bar, so never both at once).
 	_run(rig, 1, {"fire": false})
+	_run(rig, 1, {"fire": false, "drone": true})
+	_assert_eq(kits.ability_state(0), PlaneKits.Ability.ACTIVE, "the shield is out before the death")
 	_run(rig, kits.rules.laser_invuln_ticks + 2, {"fire": false})
 	_assert_eq(planes.invuln_of(0), 0, "the exit grace has run out")
 	_assert(planes.kill(0), "the plane can now be killed")

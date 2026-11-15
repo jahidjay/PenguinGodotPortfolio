@@ -74,6 +74,13 @@ const ITEM_FALLBACK := [
 const KIT_NAMES := ["LANCER", "LEECH", "SENTRY", "BREAKER"]
 
 const VISUALS_PATH := "res://data/art/run_visuals_1941.tres"
+## How the stage ends after the boss: the combo call-out, then the fly-away.
+const OUTRO_PATH := "res://data/stages/stage_outro.tres"
+## Where the stage goes when its outro ends. Stage 2 does not exist yet.
+const AFTER_STAGE_SCENE := "res://src/ui/menu/title.tscn"
+## The laser bar under each Lancer, bottom of the screen.
+const METER_BAR_SIZE := Vector2(80.0, 4.0)
+const METER_BAR_Y := 630.0
 ## Sky behind the parallax strips, for any frame a strip has not covered.
 const SKY := Color(0.431, 0.510, 0.392)
 
@@ -101,11 +108,17 @@ var _planes_layer: Node2D
 var _world_layer: Node2D
 var _enemy_layer: Node2D
 var visuals: RunVisuals
+var outro: StageOutro
+## Seconds since the stage was cleared, or -1 while it is still being played.
+var _outro_t := -1.0
+## The big STAGE CLEAR / BOSS COMBO call-out.
+var _outro_label: Label
 
 
 func _ready() -> void:
 	world = SimWorld.new(SimWorld.Config.from_data())
 	visuals = load(VISUALS_PATH) as RunVisuals
+	outro = load(OUTRO_PATH) as StageOutro
 
 	# Child order IS draw order, and the art bible's one inviolable rule is
 	# that a bullet always draws on top of what it might be mistaken for:
@@ -212,6 +225,16 @@ func _build_banner() -> void:
 	_banner.add_theme_constant_override("outline_size", 5)
 	layer.add_child(_banner)
 
+	_outro_label = Label.new()
+	_outro_label.size = Vector2(PLAY_AREA.size.x, 200.0)
+	_outro_label.position = Vector2(0.0, 170.0)
+	_outro_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_outro_label.add_theme_font_size_override("font_size", 30)
+	_outro_label.add_theme_color_override("font_color", Color(1.0, 0.86, 0.35))
+	_outro_label.add_theme_color_override("font_outline_color", Color(0.08, 0.07, 0.09))
+	_outro_label.add_theme_constant_override("outline_size", 7)
+	_outro_label.visible = false
+	layer.add_child(_outro_label)
 
 func _show_banner(text: String, ticks: int) -> void:
 	_banner_text = text
@@ -242,8 +265,9 @@ func _update_banner() -> void:
 		_banner_text = UiStrings.text("run.game_over")
 		_banner_ticks = 1
 	elif world.run_state == SimWorld.RunState.STAGE_CLEAR:
-		_banner_text = UiStrings.text("run.stage_clear")
-		_banner_ticks = 1
+		# The outro call-out owns the screen now.
+		_banner.text = ""
+		return
 
 	if _banner_ticks <= 0:
 		_banner.text = ""
@@ -323,9 +347,52 @@ func _set_drone_notice(slot: int, text: String) -> void:
 	_drone_notice_ticks = 150
 
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
 	# Render frame: pack the bullet pool into the MultiMesh (one assignment).
 	bullet_renderer.sync_from(world.enemy_bullets)
+	if world.run_state == SimWorld.RunState.STAGE_CLEAR:
+		_tick_outro(delta)
+
+
+## The stage ending: big boss-combo text, then the planes climb away past the
+## horizon, then the game moves on. Real frame time, because the simulation is
+## frozen once the stage is clear.
+func _tick_outro(delta: float) -> void:
+	if outro == null:
+		return
+	_outro_t = 0.0 if _outro_t < 0.0 else _outro_t + delta
+	if outro.shows_text(_outro_t) and not _outro_label.visible:
+		_outro_label.text = _outro_text()
+		_outro_label.visible = true
+	_planes_layer.queue_redraw()
+	if outro.is_done(_outro_t):
+		_outro_t = -1.0
+		GameSession.clear_run()
+		get_tree().change_scene_to_file(AFTER_STAGE_SCENE)
+
+
+## STAGE CLEAR, then each player's best combo on the boss.
+func _outro_text() -> String:
+	var lines := PackedStringArray([UiStrings.text("run.stage_clear"), ""])
+	lines.append(UiStrings.text("run.boss_combo"))
+	var slots: Array[int] = []
+	for slot: int in range(PlaneCore.MAX_SLOTS):
+		if world.planes.is_in_run(slot):
+			slots.append(slot)
+	for slot: int in slots:
+		var hits := UiStrings.text("run.combo_hits").format([world.chain.boss_peak_of(slot)])
+		lines.append(hits if slots.size() == 1 else "P%d  %s" % [slot + 1, hits])
+	return "\n".join(lines)
+
+
+## Px every plane has climbed in the outro, 0 while playing.
+func _outro_lift() -> float:
+	return outro.plane_lift(_outro_t) if outro != null and _outro_t >= 0.0 else 0.0
+
+
+## Draw scale of the planes in the outro, 1 while playing.
+func _outro_scale() -> float:
+	return outro.plane_scale(_outro_t) if outro != null and _outro_t >= 0.0 else 1.0
 
 
 ## One immediate-draw layer. Nothing is a Sprite2D node: a bullet-hell field
@@ -473,6 +540,30 @@ func _draw_plane_layer(on: Node2D) -> void:
 	_draw_lasers(on)
 	_draw_planes(on)
 	_draw_drones(on)
+	_draw_meter_bars(on)
+
+
+## The Lancer's laser bar, one per player along the bottom edge. It fills from
+## hits, burns while the laser or the drone shield runs, and turns bright once
+## it holds enough to start the laser.
+func _draw_meter_bars(on: Node2D) -> void:
+	if world.kits == null or _outro_t >= 0.0:
+		return
+	for slot: int in range(PlaneCore.MAX_SLOTS):
+		if not world.planes.is_in_run(slot):
+			continue
+		if world.kits.kind_of(slot) != KitRules.Kind.LANCER:
+			continue
+		var origin := Vector2(8.0 + float(slot) * 88.0, METER_BAR_Y)
+		var colour: Color = _slot_color(slot)
+		var rules := world.kits.rules
+		var can_burn := world.kits.meter_of(slot) >= rules.laser_min_meter
+		on.draw_rect(Rect2(origin - Vector2(1, 1), METER_BAR_SIZE + Vector2(2, 2)), Color(0.05, 0.05, 0.08, 0.85))
+		var fill := METER_BAR_SIZE * Vector2(world.kits.meter_ratio(slot), 1.0)
+		on.draw_rect(Rect2(origin, fill), colour.lightened(0.35) if can_burn else colour.darkened(0.25))
+		# The laser threshold, so the player can see when a hold will burn.
+		var mark := origin.x + METER_BAR_SIZE.x * float(rules.laser_min_meter) / float(rules.meter_max)
+		on.draw_line(Vector2(mark, origin.y - 1.0), Vector2(mark, origin.y + METER_BAR_SIZE.y + 1.0), Color.WHITE)
 
 
 ## The Lancer beam: a column from the nose to whatever stopped it, or to the
@@ -493,6 +584,14 @@ func _draw_lasers(on: Node2D) -> void:
 		on.draw_rect(
 			Rect2(at.x - half * 0.4, top, half * 0.8, at.y - 14.0 - top), Color.WHITE
 		)
+		# Each docked drone focuses a thin ray into the beam's root.
+		var root := Vector2(at.x, at.y - 22.0)
+		for d: int in range(world.kits.drone_count(slot)):
+			if world.kits.drone_state(slot, d) != PlaneKits.Drone.DOCKED:
+				continue
+			var from := world.kits.drone_position(slot, d)
+			on.draw_line(from, root, colour, 2.0)
+			on.draw_line(from, root, Color(1, 1, 1, 0.8), 1.0)
 
 
 func _draw_drones(on: Node2D) -> void:
@@ -502,10 +601,16 @@ func _draw_drones(on: Node2D) -> void:
 	for slot: int in range(PlaneCore.MAX_SLOTS):
 		if not world.planes.is_in_run(slot):
 			continue
+		var plane_at := world.planes.position_of(slot)
+		var draw_scale := _outro_scale()
 		for d: int in range(world.kits.drone_count(slot)):
 			var at := world.kits.drone_position(slot, d)
+			if _outro_t >= 0.0:
+				# The flight leaves together: each drone keeps its place on
+				# the plane, shrinking with it.
+				at = plane_at + (at - plane_at) * draw_scale - Vector2(0.0, _outro_lift())
 			if sprite != null:
-				_draw_centred(on, sprite, at)
+				_draw_centred(on, sprite, at, Color.WHITE, draw_scale)
 			else:
 				on.draw_rect(Rect2(at.x - 4.0, at.y - 4.0, 8.0, 8.0), _slot_color(slot))
 			# A drone that is doing something has to look like it is doing it.
@@ -603,7 +708,13 @@ func _draw_shots(on: Node2D) -> void:
 
 ## Draws a sprite centred on a world position, snapped to whole pixels: a
 ## half-pixel sprite on a 360x640 canvas shimmers and softens its outline.
-func _draw_centred(on: Node2D, tex: Texture2D, at: Vector2, tint := Color.WHITE) -> void:
+func _draw_centred(
+	on: Node2D, tex: Texture2D, at: Vector2, tint := Color.WHITE, draw_scale := 1.0
+) -> void:
+	if draw_scale != 1.0:
+		var size := tex.get_size() * draw_scale
+		on.draw_texture_rect(tex, Rect2(at - size * 0.5, size), false, tint)
+		return
 	on.draw_texture(
 		tex,
 		Vector2(
@@ -621,7 +732,8 @@ func _draw_planes(on: Node2D) -> void:
 		var state := world.planes.state_of(slot)
 		if state == PlaneCore.State.DEAD or state == PlaneCore.State.GAME_OVER:
 			continue
-		var p := world.planes.position_of(slot)
+		var p := world.planes.position_of(slot) - Vector2(0.0, _outro_lift())
+		var draw_scale := _outro_scale()
 		var color: Color = _slot_color(slot)
 
 		# Invulnerable planes blink, so the state is readable without a HUD.
@@ -631,14 +743,17 @@ func _draw_planes(on: Node2D) -> void:
 		if visible_body:
 			var plane := _plane_sprite(slot)
 			if plane != null:
-				_draw_centred(on, plane, p)
+				_draw_centred(on, plane, p, Color.WHITE, draw_scale)
 			else:
 				var body := PackedVector2Array([
 					p + Vector2(0, -9), p + Vector2(-7, 6), p + Vector2(7, 6),
 				])
 				on.draw_colored_polygon(body, color)
 
-		# The hitbox never blinks (art bible 4.4: it is always visible).
+		# The hitbox never blinks (art bible 4.4: it is always visible) —
+		# except in the outro, where nothing can hit the plane any more.
+		if _outro_t >= 0.0:
+			continue
 		var ring := _hitbox_sprite(slot)
 		if ring != null:
 			_draw_centred(on, ring, p)

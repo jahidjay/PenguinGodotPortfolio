@@ -35,9 +35,16 @@ enum Kind { LANCER, LEECH, SENTRY, BREAKER }
 ]
 
 @export_group("Lancer (Rules 16-25)")
-## Bullets per plane volley, and the spread in radians.
-@export var lancer_shot_count := 3
-@export var lancer_spread_rad := 0.157
+## Parallel shot lines the plane fires, indexed by how many drones it holds:
+## 2 lines with 0-1 drones, up to 4 at full power (all four drones).
+@export var lancer_lines_by_drones: Array[int] = [2, 2, 3, 3, 4]
+## Px between two neighbouring plane lines.
+@export var lancer_line_gap := 7.0
+## Lines EACH Lancer drone fires: 1 normally, `lancer_drone_full_lines` once
+## the plane holds `max_drones` (full power).
+@export var lancer_drone_full_lines := 2
+## Px between a drone's two lines at full power.
+@export var lancer_drone_line_gap := 4.0
 ## Laser meter, 0 to `meter_max`.
 @export var meter_max := 1000
 ## Meter needed at the charge tick to start the laser. Checked once, on the
@@ -59,6 +66,9 @@ enum Kind { LANCER, LEECH, SENTRY, BREAKER }
 ## Laser damage, dealt every `laser_damage_interval` active ticks.
 @export var laser_damage := 60
 @export var laser_damage_interval := 3
+## Focused laser: every docked drone feeds the beam instead of shooting, adding
+## this much to each laser damage tick.
+@export var laser_drone_bonus := 20
 ## Half-width of the beam column, px.
 @export var laser_half_width := 7.0
 ## Invulnerability requested each active tick, including the exit grace.
@@ -66,9 +76,14 @@ enum Kind { LANCER, LEECH, SENTRY, BREAKER }
 ## Plane speed while the laser is on, px/s.
 @export var laser_speed := 90.0
 ## Drone Shield: the drones fly to a line just in front of the plane, move
-## with it, fire straight up with the plane's gun, and erase every enemy
-## bullet that touches them. Ticks the shield lasts.
-@export var shield_ticks := 360
+## with it, fire with it, and erase every enemy bullet that touches them.
+## The shield runs on the laser bar: it drains `shield_meter_per_tick` and
+## ends when the bar is empty. The bar does not fill while it is up.
+@export var shield_meter_per_tick := 3
+## A press with less than this in the bar still deploys, but only for
+## `shield_low_meter_ticks` (a much shorter shield).
+@export var shield_min_meter := 100
+@export var shield_low_meter_ticks := 90
 ## Station offsets from the plane, one per drone, px. Drones 1-2 sit side by
 ## side so their circles overlap into one wall; 3-4 widen it.
 @export var shield_dx: Array[float] = [-11.0, 11.0, -32.0, 32.0]

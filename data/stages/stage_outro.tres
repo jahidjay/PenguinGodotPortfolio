@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="StageOutro" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/gameplay/run/stage_outro.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+text_delay = 0.4
+climb_delay = 2.2
+climb_accel = 520.0
+shrink_seconds = 1.6
+horizon_scale = 0.3
+end_at = 6.0

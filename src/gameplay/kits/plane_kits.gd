@@ -16,9 +16,9 @@ extends RefCounted
 ## through `on_damage`, and Collision decides what they cost.
 ##
 ## The four planes, in one sentence each:
-##   LANCER  3-way spread; hold to burn a LASER that also shields; drones form
-##           a SHIELD line in front of the plane that fires with it and blocks
-##           enemy bullets until each drone has taken its share.
+##   LANCER  2-4 parallel lines (more drones, more lines); hold to burn a
+##           LASER that the docked drones focus into; or spend the same bar on
+##           a drone SHIELD in front of the plane that fires and blocks bullets.
 ##   LEECH   tight pair; hold to focus into two hard slow bullets; drones fly
 ##           out and LATCH onto enemies, ticking damage.
 ##   SENTRY  twin parallel guns; hold to ENTRENCH behind a nose cannon while
@@ -78,6 +78,9 @@ var _beam_top := PackedFloat32Array()
 ## never decays, and death takes all of it.
 var _stock := PackedInt32Array()
 var _bolt_cd := PackedInt32Array()
+## 1 while a Lancer shield is running on the laser bar (it ends when the bar
+## is empty), 0 for a short low-bar shield on its own timer.
+var _shield_on_meter := PackedInt32Array()
 ## Ticks since the drone ability was accepted, for Sentry's early recall.
 var _ability_age := PackedInt32Array()
 ## Consecutive ticks this slot's charge mode has run, 0 when it is not
@@ -126,6 +129,7 @@ func _init(p_rules: KitRules, bullet_rules: BulletRules, play_area: Rect2) -> vo
 	_stock.resize(MAX_SLOTS)
 	_bolt_cd.resize(MAX_SLOTS)
 	_ability_age.resize(MAX_SLOTS)
+	_shield_on_meter.resize(MAX_SLOTS)
 	_charge_ticks.resize(MAX_SLOTS)
 	_pulse_drone.resize(MAX_SLOTS)
 	for s: int in range(MAX_SLOTS):
@@ -296,6 +300,9 @@ func _begin_charge(slot: int) -> void:
 func _can_charge(slot: int) -> bool:
 	if _kind[slot] != KitRules.Kind.LANCER:
 		return true
+	# The shield and the laser share the bar: one at a time.
+	if _ability[slot] == Ability.ACTIVE:
+		return false
 	return _meter[slot] >= rules.laser_min_meter
 
 
@@ -328,7 +335,7 @@ func _tick_shot(slot: int, planes: PlaneCore, enemies: EnemyManager) -> void:
 
 	match _kind[slot]:
 		KitRules.Kind.LANCER:
-			_volley(slot, at, rules.lancer_shot_count, rules.lancer_spread_rad, 14.0)
+			_volley(slot, at, lancer_lines(slot), 0.0, 14.0, rules.lancer_line_gap)
 			_shot_cd[slot] = rules.shot_interval
 		KitRules.Kind.LEECH:
 			if charging:
@@ -458,6 +465,9 @@ func _tick_drone_button(
 	# press starts no cooldown and does nothing at all.
 	if _ability[slot] != Ability.READY or _drone_count[slot] < 1:
 		return
+	# The Lancer's laser and shield share the bar: one at a time.
+	if _kind[slot] == KitRules.Kind.LANCER and _laser_ticks[slot] >= 0:
+		return
 	# Only the Leech needs something to latch onto. A Sentry pre-places its
 	# turrets and a Breaker net works on an empty screen (GDD 29 Rule 4).
 	if _kind[slot] == KitRules.Kind.LEECH and (enemies == null or enemies.count() == 0):
@@ -472,7 +482,13 @@ func _tick_drone_button(
 		KitRules.Kind.LANCER:
 			# Drone Shield: the stations are PLANE-relative, like the
 			# Breaker net, so the wall moves with the player.
-			_ability_timer[slot] = rules.shield_ticks
+			# It runs on the laser bar; a near-empty bar gives a short one.
+			if _meter[slot] >= rules.shield_min_meter:
+				_shield_on_meter[slot] = 1
+				_ability_timer[slot] = 1 << 30
+			else:
+				_shield_on_meter[slot] = 0
+				_ability_timer[slot] = rules.shield_low_meter_ticks
 			for d: int in range(_drone_count[slot]):
 				var i := slot * MAX_DRONES + d
 				_d_state[i] = Drone.GOING
@@ -516,6 +532,7 @@ func _recall(slot: int) -> void:
 	_ability[slot] = Ability.COOLDOWN
 	_return_ticks[slot] = 0
 	_cooldown[slot] = _cooldown_of(slot)
+	_shield_on_meter[slot] = 0
 
 
 func _cooldown_of(slot: int) -> int:
@@ -537,6 +554,10 @@ func _tick_drones(
 	if _ability[slot] == Ability.ACTIVE:
 		_ability_age[slot] += 1
 		_ability_timer[slot] -= 1
+		if _shield_on_meter[slot] != 0:
+			_meter[slot] = maxi(0, _meter[slot] - rules.shield_meter_per_tick)
+			if _meter[slot] <= 0:
+				_ability_timer[slot] = 0
 		if _ability_timer[slot] <= 0:
 			_recall(slot)
 
@@ -551,7 +572,8 @@ func _tick_drones(
 			Drone.DOCKED:
 				_d_x[i] = home.x
 				_d_y[i] = home.y
-				if _gun_on(slot) and _tick % rules.drone_interval == _d_phase[i]:
+				var focusing := _laser_ticks[slot] >= 0
+				if _gun_on(slot) and not focusing and _tick % rules.drone_interval == _d_phase[i]:
 					_fire_idle_drone(slot, i, enemies)
 			Drone.GOING:
 				all_home = false
@@ -595,8 +617,8 @@ func _tick_drones(
 
 
 ## Drone Shield: the drone rides its station in front of the plane, erases
-## every enemy bullet inside `shield_r`, and fires straight up with the
-## plane's gun. After blocking `shield_budget` bullets it breaks and flies home.
+## every enemy bullet inside `shield_r`, and fires straight up while the gun is
+## on. After blocking `shield_budget` bullets it breaks and flies home.
 func _tick_shield(
 	slot: int, i: int, d: int, base: Vector2, enemy_bullets: BulletField
 ) -> void:
@@ -612,13 +634,9 @@ func _tick_shield(
 		var queue := _pulse_drone[slot]
 		queue.append(d)
 		_pulse_drone[slot] = queue
-	var interval := maxi(1, rules.shot_interval)
-	if _gun_on(slot) and _tick % interval == _d_phase[i] % interval:
-		if field.request_spawn(
-			_d_x[i], _d_y[i], 0.0, -rules.shot_speed,
-			BulletField.Beh.LINEAR, BulletRules.Shape.RICE, 0.0, slot, rules.shot_damage
-		):
-			shots_fired += 1
+	# Drones fire a little slower than the plane (`drone_interval`).
+	if _gun_on(slot) and _tick % rules.drone_interval == _d_phase[i]:
+		_drone_volley(slot, i, 0.0, -rules.shot_speed)
 
 
 func _shield_station(d: int, base: Vector2) -> Vector2:
@@ -646,11 +664,36 @@ func _fire_idle_drone(slot: int, i: int, enemies: EnemyManager) -> void:
 				var aim := up + off
 				vx = SimMath.cos_bam(aim) * rules.shot_speed
 				vy = SimMath.sin_bam(aim) * rules.shot_speed
-	if field.request_spawn(
-		_d_x[i], _d_y[i], vx, vy,
-		BulletField.Beh.LINEAR, BulletRules.Shape.RICE, 0.0, slot, rules.shot_damage
-	):
-		shots_fired += 1
+	_drone_volley(slot, i, vx, vy)
+
+
+## One drone's bullets: one line, or two side by side for a Lancer at full
+## power.
+func _drone_volley(slot: int, i: int, vx: float, vy: float) -> void:
+	var lines := drone_lines(slot)
+	var gap := rules.lancer_drone_line_gap
+	for k: int in range(lines):
+		var dx := (float(k) - float(lines - 1) * 0.5) * gap
+		if field.request_spawn(
+			_d_x[i] + dx, _d_y[i], vx, vy,
+			BulletField.Beh.LINEAR, BulletRules.Shape.RICE, 0.0, slot, rules.shot_damage
+		):
+			shots_fired += 1
+
+
+## Lines the Lancer plane fires now: more drones, more lines.
+func lancer_lines(slot: int) -> int:
+	var table := rules.lancer_lines_by_drones
+	if table.is_empty():
+		return 1
+	return maxi(1, table[clampi(_drone_count[slot], 0, table.size() - 1)])
+
+
+## Lines each drone fires: two per drone only for a Lancer holding every drone.
+func drone_lines(slot: int) -> int:
+	if _kind[slot] == KitRules.Kind.LANCER and _drone_count[slot] >= rules.max_drones:
+		return maxi(1, rules.lancer_drone_full_lines)
+	return 1
 
 
 ## The nearest hittable enemy above `from` and inside `range_px`, or -1.
@@ -851,7 +894,7 @@ func _tick_laser(slot: int, planes: PlaneCore, enemies: EnemyManager) -> void:
 	_beam_top[slot] = enemies.position_of(target).y if target >= 0 else -1.0
 	# (d) damage on every third active tick.
 	if target >= 0 and k % rules.laser_damage_interval == 0:
-		_send_damage(slot, target, rules.laser_damage)
+		_send_damage(slot, target, laser_damage_of(slot))
 
 	_laser_ticks[slot] = k + 1
 	# (f) out of meter: this was the last tick. The hold becomes a plain hold,
@@ -861,6 +904,19 @@ func _tick_laser(slot: int, planes: PlaneCore, enemies: EnemyManager) -> void:
 		_end_laser(slot)
 		if _fire[slot] == Fire.CHARGE:
 			_fire[slot] = Fire.HOLD_PLAIN
+
+
+## One laser damage tick: the beam plus every docked drone focusing into it.
+func laser_damage_of(slot: int) -> int:
+	return rules.laser_damage + rules.laser_drone_bonus * docked_drones(slot)
+
+
+func docked_drones(slot: int) -> int:
+	var n := 0
+	for d: int in range(_drone_count[slot]):
+		if _d_state[slot * MAX_DRONES + d] == Drone.DOCKED:
+			n += 1
+	return n
 
 
 func _end_laser(slot: int) -> void:
@@ -874,6 +930,9 @@ func report_shot_hit(slot: int) -> void:
 	if slot < 0 or slot >= MAX_SLOTS:
 		return
 	if _kind[slot] != KitRules.Kind.LANCER or _laser_ticks[slot] >= 0:
+		return
+	# The shield spends the bar; it does not refill while it is up.
+	if _ability[slot] == Ability.ACTIVE:
 		return
 	_meter[slot] = mini(rules.meter_max, _meter[slot] + rules.fill_per_hit)
 
@@ -901,6 +960,7 @@ func _reset_slot(slot: int) -> void:
 	_ability[slot] = Ability.READY
 	_ability_timer[slot] = 0
 	_ability_age[slot] = 0
+	_shield_on_meter[slot] = 0
 	_cooldown[slot] = 0
 	# GDD 29 Rule 21: death takes the whole return stock.
 	_stock[slot] = 0

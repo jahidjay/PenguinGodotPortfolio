@@ -13,7 +13,14 @@ The user is now driving the game step by step and said to ignore the GDD for thi
 - Lancer drone ability is now a Drone Shield (replaced "park"): drones line up just in front of the plane,
   follow it, fire straight up with the plane's gun, and erase enemy bullets touching them. Each drone
   breaks after `shield_budget` blocks; the shield lasts `shield_ticks` (`data/kit_rules.tres`).
-- Next (user's plan): after STAGE CLEAR nothing happens yet; more stages and progression come next.
+- Lancer rework (2026-11-15): plane fires 2/2/3/3/4 parallel lines by drone count; each drone 1 line, 2 at
+  full power (4 drones). Hold Fire = laser, docked drones focus into it (+`laser_drone_bonus` per drone).
+  Drone button = shield that drains the laser bar until 0 (bar can't refill meanwhile); with < 100 in the
+  bar it is a short 1.5 s shield. Laser and shield never run together. Laser bar drawn at screen bottom.
+- Stage end: after the boss, big STAGE CLEAR + BOSS COMBO (chain.boss_peak_of) text, planes climb and
+  shrink past the horizon (`StageOutro`, `data/stages/stage_outro.tres`), then back to title.
+- Open question: user wants "2 colours per plane"; current lobby gives 4 slot colourways per plane.
+- Next: Stage 2 (the outro currently returns to the title).
 
 ## Project in one line
 2D vertical bullet-hell shmup (DoDonPachi-style chain) — four 1941 planes, each stage jumps forward in time (1941 → 1970s → 2030s → 2100+), 1–4 local co-op. Godot 4.7, GDScript + C#.
