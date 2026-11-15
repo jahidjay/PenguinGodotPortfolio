@@ -12,12 +12,13 @@ extends RefCounted
 ##
 ## It owns the player bullet pool, because the plane shot and the drone
 ## bullets are the same pool with different tags (Rule 8). It does NOT own
-## damage resolution: the beam, parked beam and latch send damage events out
+## damage resolution: the beam and the latch send damage events out
 ## through `on_damage`, and Collision decides what they cost.
 ##
 ## The four planes, in one sentence each:
-##   LANCER  3-way spread; hold to burn a LASER that also shields; drones park
-##           and beam columns straight up.
+##   LANCER  3-way spread; hold to burn a LASER that also shields; drones form
+##           a SHIELD line in front of the plane that fires with it and blocks
+##           enemy bullets until each drone has taken its share.
 ##   LEECH   tight pair; hold to focus into two hard slow bullets; drones fly
 ##           out and LATCH onto enemies, ticking damage.
 ##   SENTRY  twin parallel guns; hold to ENTRENCH behind a nose cannon while
@@ -43,15 +44,16 @@ const MAX_DRONES := 4
 ## Rule 4's fire state machine.
 enum Fire { IDLE, SHOT, CHARGE, HOLD_PLAIN }
 ## Where a drone is. DOCKED drones fire idle bullets; nothing else does
-## (Rule 9). GOING is in transit to a Sentry post or a Breaker station.
-enum Drone { DOCKED, GOING, PARKED, FLYING, LATCHED, RETURNING, EMPLACED, NET_ON }
+## (Rule 9). GOING is in transit to a Lancer shield, Sentry post or Breaker
+## station. Values are append-only (replay format): SHIELD took PARKED's slot.
+enum Drone { DOCKED, GOING, SHIELD, FLYING, LATCHED, RETURNING, EMPLACED, NET_ON }
 ## Rule 30's ability gate.
 enum Ability { READY, ACTIVE, COOLDOWN }
 
 var rules: KitRules
 ## The player bullet pool. Enemies are registered as its targets each tick.
 var field: BulletField
-## Called for damage that is not a bullet: the laser, parked beams, latches.
+## Called for damage that is not a bullet: the laser, latches, turrets, rams.
 ## `func(slot: int, target_index: int, amount: int) -> void`.
 var on_damage: Callable
 
@@ -184,9 +186,9 @@ func tick(
 			continue
 
 		# A docked drone sits on its wing slot. This has to happen BEFORE the
-		# Drone button is read, because "park where you are" (Rule 23) reads
-		# the drone's position — and on the first tick of a run it would
-		# otherwise still be (0, 0), parking the whole flight in the corner.
+		# Drone button is read, because a launched drone flies out from where
+		# it IS — and on the first tick of a run it would otherwise still be
+		# at (0, 0), so the whole flight would start from the corner.
 		_dock_positions(slot, planes)
 		_tick_fire_state(slot, input)
 		_tick_drone_button(slot, input, planes, enemies)
@@ -218,10 +220,13 @@ func _credit_erase_reports(enemy_bullets: BulletField) -> void:
 				seen += 1
 				if d >= 0:
 					_d_tally[slot * MAX_DRONES + d] += count
-				_stock[slot] = mini(
-					rules.stock_max,
-					_stock[slot] + mini(count, rules.credit_per_pulse_cap)
-				)
+				# Only the Breaker banks erased bullets; a Lancer shield
+				# just wears down (its tally).
+				if _kind[slot] == KitRules.Kind.BREAKER:
+					_stock[slot] = mini(
+						rules.stock_max,
+						_stock[slot] + mini(count, rules.credit_per_pulse_cap)
+					)
 		_pulse_drone[slot] = PackedInt32Array()
 
 
@@ -465,12 +470,14 @@ func _tick_drone_button(
 	var plane := planes.position_of(slot)
 	match _kind[slot]:
 		KitRules.Kind.LANCER:
-			_ability_timer[slot] = rules.park_ticks
+			# Drone Shield: the stations are PLANE-relative, like the
+			# Breaker net, so the wall moves with the player.
+			_ability_timer[slot] = rules.shield_ticks
 			for d: int in range(_drone_count[slot]):
 				var i := slot * MAX_DRONES + d
-				# Rule 23: it parks where it IS, clamped inside the screen.
-				_d_state[i] = Drone.PARKED
-				_d_x[i] = clampf(_d_x[i], 8.0, 352.0)
+				_d_state[i] = Drone.GOING
+				_d_tally[i] = 0
+				_d_target[i] = -1
 		KitRules.Kind.LEECH:
 			_ability_timer[slot] = rules.latch_ticks
 			for d: int in range(_drone_count[slot]):
@@ -555,16 +562,9 @@ func _tick_drones(
 			Drone.NET_ON:
 				all_home = false
 				_tick_net(slot, i, d, base, enemies, enemy_bullets)
-			Drone.PARKED:
+			Drone.SHIELD:
 				all_home = false
-				if enemies != null and _tick % rules.park_interval == _d_phase[i]:
-					# Rule 23: a thin beam straight up, stopping at the first
-					# hurtbox in its column, like the laser.
-					var target := enemies.first_in_column(
-						_d_x[i], rules.park_half_width, _d_y[i]
-					)
-					if target >= 0:
-						_send_damage(slot, target, rules.park_damage)
+				_tick_shield(slot, i, d, base, enemy_bullets)
 			Drone.FLYING:
 				all_home = false
 				_fly_to_target(slot, i, enemies)
@@ -583,6 +583,47 @@ func _tick_drones(
 
 	if _ability[slot] == Ability.COOLDOWN and not all_home:
 		_return_ticks[slot] += 1
+	# A Lancer shield whose every drone has broken is over early.
+	if _ability[slot] == Ability.ACTIVE and _kind[slot] == KitRules.Kind.LANCER:
+		var any_out := false
+		for d: int in range(_drone_count[slot]):
+			var st := _d_state[slot * MAX_DRONES + d]
+			if st == Drone.GOING or st == Drone.SHIELD:
+				any_out = true
+		if not any_out:
+			_recall(slot)
+
+
+## Drone Shield: the drone rides its station in front of the plane, erases
+## every enemy bullet inside `shield_r`, and fires straight up with the
+## plane's gun. After blocking `shield_budget` bullets it breaks and flies home.
+func _tick_shield(
+	slot: int, i: int, d: int, base: Vector2, enemy_bullets: BulletField
+) -> void:
+	if _d_tally[i] >= rules.shield_budget:
+		_d_state[i] = Drone.RETURNING
+		return
+	var station := _shield_station(d, base)
+	_d_x[i] = station.x
+	_d_y[i] = station.y
+	if enemy_bullets != null:
+		# A kit cancel never pays score items (Rule 33).
+		enemy_bullets.request_cancel_circle(station.x, station.y, rules.shield_r, slot, false)
+		var queue := _pulse_drone[slot]
+		queue.append(d)
+		_pulse_drone[slot] = queue
+	var interval := maxi(1, rules.shot_interval)
+	if _gun_on(slot) and _tick % interval == _d_phase[i] % interval:
+		if field.request_spawn(
+			_d_x[i], _d_y[i], 0.0, -rules.shot_speed,
+			BulletField.Beh.LINEAR, BulletRules.Shape.RICE, 0.0, slot, rules.shot_damage
+		):
+			shots_fired += 1
+
+
+func _shield_station(d: int, base: Vector2) -> Vector2:
+	var dx: float = rules.shield_dx[d] if d < rules.shield_dx.size() else 0.0
+	return Vector2(clampf(base.x + dx, 8.0, 352.0), maxf(14.0, base.y + rules.shield_dy))
 
 
 ## Rule 9: a docked drone fires one diamond straight up while the gun is on.
@@ -639,6 +680,10 @@ func _fly_to_station(slot: int, i: int, d: int, base: Vector2) -> void:
 		to_target = _station_of(d, base)
 		speed = rules.station_speed
 		arrive = Drone.NET_ON
+	elif _kind[slot] == KitRules.Kind.LANCER:
+		to_target = _shield_station(d, base)
+		speed = rules.shield_speed
+		arrive = Drone.SHIELD
 	var to := to_target - Vector2(_d_x[i], _d_y[i])
 	if to.length() <= speed:
 		_d_x[i] = to_target.x

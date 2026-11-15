@@ -480,7 +480,7 @@ func report_enemy_hit(slot: int, on_boss: bool = false) -> void:
 	scoring.award_hit(slot, chain.count_of(slot), chain.is_team_chain(), members)
 
 
-## A kit or a bomb dealt damage that is not a bullet (laser, parked beam,
+## A kit or a bomb dealt damage that is not a bullet (laser, latch,
 ## latch, bomb column). Collision decides what it costs, and a kill pays the
 ## player who landed it. Bomb hits never feed the chain (Bombs Rule 1), so
 ## only kit damage reports a chain hit.

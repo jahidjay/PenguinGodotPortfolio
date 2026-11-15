@@ -65,12 +65,20 @@ enum Kind { LANCER, LEECH, SENTRY, BREAKER }
 @export var laser_invuln_ticks := 13
 ## Plane speed while the laser is on, px/s.
 @export var laser_speed := 90.0
-## Ticks a parked drone stays parked.
-@export var park_ticks := 300
-## Damage of one parked-drone beam tick, and its interval.
-@export var park_damage := 40
-@export var park_interval := 8
-@export var park_half_width := 3.0
+## Drone Shield: the drones fly to a line just in front of the plane, move
+## with it, fire straight up with the plane's gun, and erase every enemy
+## bullet that touches them. Ticks the shield lasts.
+@export var shield_ticks := 360
+## Station offsets from the plane, one per drone, px. Drones 1-2 sit side by
+## side so their circles overlap into one wall; 3-4 widen it.
+@export var shield_dx: Array[float] = [-11.0, 11.0, -32.0, 32.0]
+@export var shield_dy := -30.0
+## Px per tick a drone flies out to its station.
+@export var shield_speed := 14.0
+## Radius of one drone's blocking circle, px.
+@export var shield_r := 12.0
+## Bullets one drone blocks before it breaks and flies home.
+@export var shield_budget := 25
 ## Ticks before the drone ability is ready again, counted from the last dock.
 @export var lancer_cooldown := 600
 

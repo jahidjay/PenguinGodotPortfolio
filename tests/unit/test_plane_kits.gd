@@ -1,6 +1,6 @@
 extends SceneTree
 ## Plane kits: the fire state machine, the Lancer laser and meter, drones,
-## park, latch and recall (design/gdd/plane-kits-lancer-leech.md Rules 4-36).
+## shield, latch and recall (design/gdd/plane-kits-lancer-leech.md Rules 4-36).
 ##
 ## Run from the project folder:
 ##   godot --headless --script res://tests/unit/test_plane_kits.gd
@@ -20,7 +20,10 @@ func _init() -> void:
 	test_plane_kits_laser_burns_meter_damages_and_shields()
 	test_plane_kits_laser_ends_on_release_and_on_empty_meter()
 	test_plane_kits_docked_drones_fire_on_their_own_phase()
-	test_plane_kits_lancer_park_beams_the_column_above_it()
+	test_plane_kits_lancer_shield_forms_in_front_of_the_plane_and_follows_it()
+	test_plane_kits_lancer_shield_blocks_enemy_bullets()
+	test_plane_kits_lancer_shield_drone_breaks_after_its_budget()
+	test_plane_kits_lancer_shield_fires_with_the_plane_gun()
 	test_plane_kits_leech_drones_latch_and_tick_damage()
 	test_plane_kits_ability_recalls_and_goes_on_cooldown()
 	test_plane_kits_leech_focused_shot_is_slower_and_harder()
@@ -202,25 +205,93 @@ func test_plane_kits_docked_drones_fire_on_their_own_phase() -> void:
 	_assert(_field(rig).count() > idle, "and fires while the gun is on")
 
 
-func test_plane_kits_lancer_park_beams_the_column_above_it() -> void:
+func test_plane_kits_lancer_shield_forms_in_front_of_the_plane_and_follows_it() -> void:
 	var rig := _rig()
 	var kits := _kits(rig)
-	var enemies := _enemies(rig)
-	var at := _planes(rig).position_of(0)
-	# Park the drones, then put an enemy above where one of them sits.
+	var planes := _planes(rig)
 	_run(rig, 1, {"fire": false, "drone": true})
-	_assert_eq(kits.drone_state(0, 0), PlaneKits.Drone.PARKED, "the drones park where they are")
-	_assert_eq(kits.ability_state(0), PlaneKits.Ability.ACTIVE, "and the ability is running")
-
-	var park := kits.drone_position(0, 0)
-	enemies.spawn(_target(4000), Vector2(park.x, park.y - 150.0), false, 0.0)
-	enemies.tick(1)
-	var hp := enemies.hp_of(0)
-	_run(rig, 40, {"fire": false})
+	_assert_eq(kits.ability_state(0), PlaneKits.Ability.ACTIVE, "the press is accepted")
+	_run(rig, 20, {"fire": false})
+	_assert_eq(kits.drone_state(0, 0), PlaneKits.Drone.SHIELD, "the drones reach the shield line")
+	var want := planes.position_of(0) + Vector2(kits.rules.shield_dx[0], kits.rules.shield_dy)
 	_assert(
-		enemies.hp_of(0) < hp,
-		"a parked drone beams the column above it with the gun off (dealt %d)" % (hp - enemies.hp_of(0))
+		kits.drone_position(0, 0).distance_to(want) < 0.5,
+		"drone 1 sits in front of the plane (at %s, want %s)" % [kits.drone_position(0, 0), want]
 	)
+	_assert(kits.drone_position(0, 0).y < planes.position_of(0).y, "above it, between it and the enemy")
+
+	# It moves WITH the plane: fly left for a while, the wall comes along.
+	var input: SimInput = rig[4]
+	for t: int in range(20):
+		input.begin_tick()
+		input.set_move(0, -1, 0)
+		planes.tick(input)
+		kits.tick(planes, input, _enemies(rig))
+	want = planes.position_of(0) + Vector2(kits.rules.shield_dx[0], kits.rules.shield_dy)
+	_assert(kits.drone_position(0, 0).distance_to(want) < 0.5, "and follows the plane as it moves")
+
+
+func test_plane_kits_lancer_shield_blocks_enemy_bullets() -> void:
+	var rig := _rig()
+	var kits := _kits(rig)
+	var pool := _enemy_pool()
+	_run_pool(rig, pool, 1, {"fire": false, "drone": true})
+	_run_pool(rig, pool, 20, {"fire": false})
+	var at := kits.drone_position(0, 0)
+	for i: int in range(5):
+		pool.request_spawn(at.x, at.y, 0.0, 0.0)
+	# A bullet well away from the shield must survive.
+	pool.request_spawn(at.x, at.y + 120.0, 0.0, 0.0)
+	pool.tick()
+	_assert_eq(pool.count(), 6, "six bullets on the field")
+	_run_pool(rig, pool, 3, {"fire": false})
+	_assert_eq(pool.count(), 1, "the shield erased the five touching it, not the far one")
+	_assert_eq(kits.stock_of(0), 0, "a Lancer has no Breaker stock to fill")
+
+
+func test_plane_kits_lancer_shield_drone_breaks_after_its_budget() -> void:
+	var rig := _rig()
+	var kits := _kits(rig)
+	var pool := _enemy_pool()
+	_run_pool(rig, pool, 1, {"fire": false, "drone": true})
+	_run_pool(rig, pool, 20, {"fire": false})
+	# Feed both drones more bullets than they can take.
+	for t: int in range(12):
+		for d: int in range(2):
+			var at := kits.drone_position(0, d)
+			for k: int in range(4):
+				pool.request_spawn(at.x, at.y, 0.0, 0.0)
+		_run_pool(rig, pool, 1, {"fire": false})
+	_assert(
+		kits.drone_state(0, 0) == PlaneKits.Drone.RETURNING
+		or kits.drone_state(0, 0) == PlaneKits.Drone.DOCKED,
+		"a drone that blocked its share breaks and heads home"
+	)
+	_assert_eq(
+		kits.ability_state(0), PlaneKits.Ability.COOLDOWN,
+		"with every drone broken the shield is over and cooling down"
+	)
+
+
+func test_plane_kits_lancer_shield_fires_with_the_plane_gun() -> void:
+	var rig := _rig()
+	var kits := _kits(rig)
+	_run(rig, 1, {"fire": false, "drone": true})
+	_run(rig, 20, {"fire": false})
+	var quiet := kits.shots_fired
+	_run(rig, 10, {"fire": false})
+	_assert_eq(kits.shots_fired, quiet, "a shield drone holds fire with the gun off")
+	# Count only the drone bullets: they start at the drone's x.
+	var x := kits.drone_position(0, 0).x
+	_run(rig, 10, {"fire": true})
+	var from_drone := 0
+	var field := _field(rig)
+	var xs := field.x_array()
+	var vxs := field.vx_array()
+	for i: int in range(field.count()):
+		if absf(xs[i] - x) < 1.0 and vxs[i] == 0.0:
+			from_drone += 1
+	_assert(from_drone > 0, "and fires straight up with it (%d drone bullets)" % from_drone)
 
 
 func test_plane_kits_leech_drones_latch_and_tick_damage() -> void:
@@ -242,7 +313,7 @@ func test_plane_kits_ability_recalls_and_goes_on_cooldown() -> void:
 	var rig := _rig()
 	var kits := _kits(rig)
 	_run(rig, 1, {"fire": false, "drone": true})
-	_run(rig, kits.rules.park_ticks + 1, {"fire": false})
+	_run(rig, kits.rules.shield_ticks + 21, {"fire": false})
 	_assert_eq(
 		kits.ability_state(0), PlaneKits.Ability.COOLDOWN, "the timer ends and the ability cools"
 	)
@@ -358,6 +429,25 @@ func _run(rig: Array, ticks: int, buttons: Dictionary) -> void:
 		input.set_button(0, SimInput.Action.DRONE, buttons.get("drone", false))
 		planes.tick(input)
 		kits.tick(planes, input, enemies)
+
+
+## Like [method _run], with a real enemy bullet pool for the shield to erase.
+func _run_pool(rig: Array, pool: BulletField, ticks: int, buttons: Dictionary) -> void:
+	var kits: PlaneKits = rig[0]
+	var planes: PlaneCore = rig[1]
+	var enemies: EnemyManager = rig[2]
+	var input: SimInput = rig[4]
+	for t: int in range(ticks):
+		input.begin_tick()
+		input.set_button(0, SimInput.Action.FIRE, buttons.get("fire", false))
+		input.set_button(0, SimInput.Action.DRONE, buttons.get("drone", false))
+		planes.tick(input)
+		kits.tick(planes, input, enemies, pool)
+		pool.tick()
+
+
+func _enemy_pool() -> BulletField:
+	return BulletField.new(load("res://data/bullet_rules.tres"), PLAY_AREA)
 
 
 func _fill_meter(kits: PlaneKits, slot: int) -> void:

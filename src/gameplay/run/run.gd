@@ -510,15 +510,12 @@ func _draw_drones(on: Node2D) -> void:
 				on.draw_rect(Rect2(at.x - 4.0, at.y - 4.0, 8.0, 8.0), _slot_color(slot))
 			# A drone that is doing something has to look like it is doing it.
 			match world.kits.drone_state(slot, d):
-				PlaneKits.Drone.PARKED:
-					# A Lancer park beams its column upward.
-					on.draw_rect(
-						Rect2(
-							at.x - 3.0, PLAY_AREA.position.y, 6.0,
-							at.y - PLAY_AREA.position.y
-						),
-						Color(_slot_color(slot), 0.5)
-					)
+				PlaneKits.Drone.SHIELD:
+					# A Lancer shield drone: its blocking circle, so the
+					# player can see what it covers.
+					var r := world.kits.rules.shield_r
+					on.draw_circle(at, r, Color(_slot_color(slot), 0.18))
+					on.draw_arc(at, r, 0.0, TAU, 20, Color(_slot_color(slot), 0.8), 1.0)
 				PlaneKits.Drone.EMPLACED:
 					# A Sentry turret is planted: a base plate under the pod.
 					on.draw_rect(

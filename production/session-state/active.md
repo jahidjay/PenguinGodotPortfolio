@@ -2,6 +2,19 @@
 
 Read this first in a new session. It replaces the old conversation history.
 
+## Latest (2026-11-15): Stage 1 wave rules — user-directed, GDD set aside
+The user is now driving the game step by step and said to ignore the GDD for this work.
+- A wave ends only when every enemy it sent is SHOT DOWN (`WaveDef.max_ticks` removed).
+- An enemy that leaves the field or times out respawns at its spawn point, keeping its damage
+  (`EnemyRules.respawn_on_escape`).
+- Squad aggression: a spawn group of 2+ with half its members down flies 1.25x faster and fires at
+  +0.35 intensity; the last survivor flies 1.5x faster at +0.7 (`data/enemy_rules.tres`). The 1941 wave
+  patterns now have `interval_at_full` / `count_at_full`, so intensity changes how they fire.
+- Lancer drone ability is now a Drone Shield (replaced "park"): drones line up just in front of the plane,
+  follow it, fire straight up with the plane's gun, and erase enemy bullets touching them. Each drone
+  breaks after `shield_budget` blocks; the shield lasts `shield_ticks` (`data/kit_rules.tres`).
+- Next (user's plan): after STAGE CLEAR nothing happens yet; more stages and progression come next.
+
 ## Project in one line
 2D vertical bullet-hell shmup (DoDonPachi-style chain) — four 1941 planes, each stage jumps forward in time (1941 → 1970s → 2030s → 2100+), 1–4 local co-op. Godot 4.7, GDScript + C#.
 
